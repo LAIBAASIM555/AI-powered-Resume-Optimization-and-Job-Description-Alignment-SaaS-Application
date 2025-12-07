@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: resume_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: resume_optimizer
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Optional: init script
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d resume_optimizer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - resume_network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resume_backend
+    restart: always
+    environment:
+      # PostgreSQL Connection
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: resume_optimizer
+      DATABASE_URL: postgresql://postgres:password123@db:5432/resume_optimizer
+      
+      # App Settings
+      SECRET_KEY: your-super-secret-key-change-in-production
+      DEBUG: "True"
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173,http://localhost
+    volumes:
+      - ./uploads:/app/uploads
+      - ./app:/app/app  # For development hot-reload
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - resume_network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # PgAdmin (Optional - Database Management UI)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: resume_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - resume_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  resume_network:
+    driver: bridge
+

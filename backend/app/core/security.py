@@ -1,0 +1,113 @@
+"""
+Security utilities for authentication and password hashing.
+"""
+from datetime import datetime, timedelta
+from typing import Union, Optional
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+
+from app.config import settings
+
+# Password hashing context using bcrypt
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    Verify password against hash using bcrypt.
+    
+    Args:
+        plain_password: The plain text password to verify
+        hashed_password: The hashed password to compare against
+        
+    Returns:
+        bool: True if password matches, False otherwise
+    """
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password: str) -> str:
+    """
+    Generate bcrypt password hash.
+    
+    Args:
+        password: The plain text password to hash
+        
+    Returns:
+        str: The hashed password
+    """
+    return pwd_context.hash(password)
+
+
+def create_access_token(
+    subject: Union[str, int],
+    expires_delta: Optional[timedelta] = None
+) -> str:
+    """
+    Create JWT access token.
+    
+    Args:
+        subject: The subject (user id) to encode in the token
+        expires_delta: Optional custom expiration time. If not provided,
+                      uses settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        
+    Returns:
+        str: The encoded JWT token
+    """
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+    
+    # JWT payload
+    to_encode = {
+        "sub": str(subject),  # Subject (user id)
+        "exp": expire,  # Expiration time
+        "iat": datetime.utcnow(),  # Issued at time
+    }
+    
+    # Encode token
+    encoded_jwt = jwt.encode(
+        to_encode,
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM
+    )
+    
+    return encoded_jwt
+
+
+def decode_access_token(token: str) -> Optional[int]:
+    """
+    Decode JWT token and return user_id.
+    
+    Args:
+        token: The JWT token to decode
+        
+    Returns:
+        Optional[int]: The user_id if token is valid, None otherwise
+    """
+    try:
+        # Decode token
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM]
+        )
+        
+        # Extract user_id from subject
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+        
+        # Convert to integer
+        return int(user_id)
+        
+    except JWTError:
+        # Token is invalid or expired
+        return None
+    except (ValueError, TypeError):
+        # Invalid user_id format
+        return None
+
