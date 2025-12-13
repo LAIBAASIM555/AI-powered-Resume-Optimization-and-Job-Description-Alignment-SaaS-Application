@@ -10,9 +10,9 @@ const Button = ({
   const baseStyles = 'font-medium rounded-lg transition-all duration-200 flex items-center justify-center';
   
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-md',
-    secondary: 'bg-white text-blue-600 border border-blue-600 hover:bg-blue-50',
-    danger: 'bg-red-500 text-white hover:bg-red-600',
+    primary: 'bg-primary-600 text-white hover:bg-primary-700 shadow-md hover:shadow-lg',
+    secondary: 'bg-white text-primary-600 border-2 border-primary-600 hover:bg-primary-50',
+    danger: 'bg-red-600 text-white hover:bg-red-700 shadow-md',
   };
   
   const sizes = {

@@ -5,17 +5,24 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
+      <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl font-bold mb-4">AI Resume Optimizer</h1>
-          <p className="text-xl mb-8 text-blue-100">
+          <p className="text-xl mb-8 text-primary-100">
             Get your resume past ATS systems and land more interviews
           </p>
-          <Link to="/signup">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
-              Get Started Free
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/signup">
+              <button className="bg-white text-primary-600 hover:bg-primary-50 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 shadow-lg hover:shadow-xl">
+                Get Started Free
+              </button>
+            </Link>
+            <Link to="/login">
+              <button className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200">
+                Login
+              </button>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -24,15 +31,15 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div>
-              <div className="text-4xl font-bold text-blue-600 mb-2">75%</div>
+              <div className="text-4xl font-bold text-primary-600 mb-2">75%</div>
               <div className="text-gray-600">Resumes Rejected by ATS</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-blue-600 mb-2">10K+</div>
+              <div className="text-4xl font-bold text-primary-600 mb-2">10K+</div>
               <div className="text-gray-600">Users Optimized</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-blue-600 mb-2">3x</div>
+              <div className="text-4xl font-bold text-primary-600 mb-2">3x</div>
               <div className="text-gray-600">More Interviews</div>
             </div>
           </div>
@@ -45,22 +52,22 @@ const HomePage = () => {
           <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-blue-600">1</span>
+              <div className="bg-primary-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-primary-600">1</span>
               </div>
               <h3 className="text-xl font-semibold mb-2">Upload Your Resume</h3>
               <p className="text-gray-600">Upload your resume in PDF or DOCX format</p>
             </div>
             <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-blue-600">2</span>
+              <div className="bg-primary-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-primary-600">2</span>
               </div>
               <h3 className="text-xl font-semibold mb-2">Paste Job Description</h3>
               <p className="text-gray-600">Paste the job description you're applying for</p>
             </div>
             <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-blue-600">3</span>
+              <div className="bg-primary-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-primary-600">3</span>
               </div>
               <h3 className="text-xl font-semibold mb-2">Get Instant Analysis</h3>
               <p className="text-gray-600">Receive ATS score and actionable recommendations</p>
@@ -92,15 +99,22 @@ const HomePage = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 bg-blue-600 text-white text-center">
+      <section className="py-20 bg-primary-600 text-white text-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold mb-4">Ready to Optimize Your Resume?</h2>
-          <p className="text-xl mb-8 text-blue-100">Start getting more interviews today</p>
-          <Link to="/signup">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
-              Get Started Now
-            </Button>
-          </Link>
+          <p className="text-xl mb-8 text-primary-100">Start getting more interviews today</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/signup">
+              <button className="bg-white text-primary-600 hover:bg-primary-50 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 shadow-lg hover:shadow-xl">
+                Get Started Now
+              </button>
+            </Link>
+            <Link to="/login">
+              <button className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200">
+                Login
+              </button>
+            </Link>
+          </div>
         </div>
       </section>
 

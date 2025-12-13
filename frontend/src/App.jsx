@@ -30,9 +30,9 @@ const AppRoutes = () => {
     <>
       {!hideNavbar && <Navbar />}
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage />} />
-        <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <SignupPage />} />
+        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <HomePage />} />
+        <Route path="/login" element={user ? <Navigate to="/upload" /> : <LoginPage />} />
+        <Route path="/signup" element={user ? <Navigate to="/upload" /> : <SignupPage />} />
         <Route
           path="/upload"
           element={

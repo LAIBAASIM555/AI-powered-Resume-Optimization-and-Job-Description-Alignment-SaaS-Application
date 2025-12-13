@@ -61,21 +61,25 @@ const ResultsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Button
-          variant="secondary"
-          onClick={() => navigate('/dashboard')}
-          className="mb-6"
-        >
-          ← Back to Dashboard
-        </Button>
+        <div className="mb-6 flex items-center justify-between">
+          <Button
+            variant="secondary"
+            onClick={() => navigate('/dashboard')}
+          >
+            ← Back to Dashboard
+          </Button>
+          <div className="text-sm text-gray-500">
+            {new Date(analysis.created_at).toLocaleString()}
+          </div>
+        </div>
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Analysis Results</h1>
-          <p className="text-gray-600">Resume analysis completed</p>
+          <p className="text-gray-600">Your resume has been analyzed against the job description</p>
         </div>
 
         {/* Score Card */}
-        <div className="mb-8">
+        <div className="mb-8 flex justify-center">
           <ScoreCard score={analysis.ats_score} />
         </div>
 
@@ -137,11 +141,11 @@ const ResultsPage = () => {
         )}
 
         {/* Actions */}
-        <div className="flex space-x-4">
-          <Button onClick={() => navigate('/upload')} variant="primary">
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+          <Button onClick={() => navigate('/upload')} variant="primary" size="lg" className="px-8">
             Analyze Another Resume
           </Button>
-          <Button onClick={() => navigate('/dashboard')} variant="secondary">
+          <Button onClick={() => navigate('/dashboard')} variant="secondary" size="lg" className="px-8">
             View Dashboard
           </Button>
         </div>

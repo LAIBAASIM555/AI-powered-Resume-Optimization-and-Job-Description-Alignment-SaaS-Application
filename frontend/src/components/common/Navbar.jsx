@@ -9,7 +9,8 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    // Use React Router navigation instead of window.location for smooth transition
+    navigate('/', { replace: true });
   };
 
   return (
@@ -17,7 +18,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="text-2xl font-bold text-blue-600">
+            <Link to="/" className="text-2xl font-bold text-primary-600">
               AI Resume Optimizer
             </Link>
           </div>
@@ -26,14 +27,14 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <Link to="/upload" className="text-gray-700 hover:text-blue-600 px-3 py-2">
+                <Link to="/upload" className="text-gray-700 hover:text-primary-600 px-3 py-2 transition-colors">
                   Upload
                 </Link>
-                <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 px-3 py-2">
+                <Link to="/dashboard" className="text-gray-700 hover:text-primary-600 px-3 py-2 transition-colors">
                   Dashboard
                 </Link>
                 <div className="relative group">
-                  <button className="text-gray-700 hover:text-blue-600 px-3 py-2 flex items-center">
+                  <button className="text-gray-700 hover:text-primary-600 px-3 py-2 flex items-center transition-colors">
                     {user.full_name}
                     <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -51,11 +52,11 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-gray-700 hover:text-blue-600 px-3 py-2">
+                <Link to="/login" className="text-gray-700 hover:text-primary-600 px-3 py-2 transition-colors">
                   Login
                 </Link>
                 <Link to="/signup">
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                  <button className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors shadow-md">
                     Sign Up
                   </button>
                 </Link>
@@ -67,7 +68,7 @@ const Navbar = () => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-gray-700 hover:text-blue-600"
+              className="text-gray-700 hover:text-primary-600 transition-colors"
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -81,25 +82,25 @@ const Navbar = () => {
           <div className="md:hidden pb-4">
             {user ? (
               <>
-                <Link to="/upload" className="block px-3 py-2 text-gray-700 hover:text-blue-600">
+                <Link to="/upload" className="block px-3 py-2 text-gray-700 hover:text-primary-600 transition-colors">
                   Upload
                 </Link>
-                <Link to="/dashboard" className="block px-3 py-2 text-gray-700 hover:text-blue-600">
+                <Link to="/dashboard" className="block px-3 py-2 text-gray-700 hover:text-primary-600 transition-colors">
                   Dashboard
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600"
+                  className="block w-full text-left px-3 py-2 text-gray-700 hover:text-primary-600 transition-colors"
                 >
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" className="block px-3 py-2 text-gray-700 hover:text-blue-600">
+                <Link to="/login" className="block px-3 py-2 text-gray-700 hover:text-primary-600 transition-colors">
                   Login
                 </Link>
-                <Link to="/signup" className="block px-3 py-2 text-gray-700 hover:text-blue-600">
+                <Link to="/signup" className="block px-3 py-2 text-gray-700 hover:text-primary-600 transition-colors">
                   Sign Up
                 </Link>
               </>

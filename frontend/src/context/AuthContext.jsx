@@ -39,6 +39,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
+    // Navigation is handled by the component calling logout
   };
 
   return (
