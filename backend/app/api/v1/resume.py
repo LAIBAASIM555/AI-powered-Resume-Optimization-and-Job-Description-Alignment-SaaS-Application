@@ -97,8 +97,7 @@ async def delete_resume(
     if not resume:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found")
     
-    if os.path.exists(resume.file_path):
-        os.remove(resume.file_path)
+    delete_file(resume.file_path)
     
     db.delete(resume)
     db.commit()

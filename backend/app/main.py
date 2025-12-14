@@ -11,9 +11,6 @@ from app.api.v1.router import api_router
 from app.db.database import engine
 from app.db.base import Base
 
-# Create all database tables
-Base.metadata.create_all(bind=engine)
-
 # Create FastAPI application
 app = FastAPI(
     title=settings.APP_NAME,
@@ -22,6 +19,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Database tables will be created via Alembic migrations
+# or manually when the database is ready
 
 # CORS Middleware
 app.add_middleware(

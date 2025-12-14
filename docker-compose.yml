@@ -27,6 +27,8 @@ services:
     build: ./backend
     container_name: resume_backend
     restart: always
+    ports:
+      - "8000:8000"
     environment:
       DATABASE_URL: postgresql://postgres:password123@db:5432/resume_optimizer
       SECRET_KEY: change-this-to-a-very-long-random-string-in-production

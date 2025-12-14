@@ -70,26 +70,38 @@ async def analyze_resume(
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error analyzing resume: {str(e)}")
 
+from sqlalchemy.orm import joinedload
+
+# ... (other imports)
+
 @router.get("/", response_model=List[AnalysisHistory])
 async def get_analysis_history(
     limit: int = 10,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    analyses = db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.created_at.desc()).limit(limit).all()
+    analyses = (
+        db.query(Analysis)
+        .options(
+            joinedload(Analysis.resume),
+            joinedload(Analysis.job_description)
+        )
+        .filter(Analysis.user_id == current_user.id)
+        .order_by(Analysis.created_at.desc())
+        .limit(limit)
+        .all()
+    )
     
-    result = []
-    for analysis in analyses:
-        resume = db.query(Resume).filter(Resume.id == analysis.resume_id).first()
-        job = db.query(JobDescription).filter(JobDescription.id == analysis.job_id).first()
-        
-        result.append(AnalysisHistory(
+    result = [
+        AnalysisHistory(
             id=analysis.id,
-            resume_filename=resume.filename if resume else "Unknown",
-            job_title=job.title if job else "Unknown",
+            resume_filename=analysis.resume.filename if analysis.resume else "Unknown",
+            job_title=analysis.job_description.title if analysis.job_description else "Unknown",
             ats_score=analysis.ats_score,
             created_at=analysis.created_at
-        ))
+        )
+        for analysis in analyses
+    ]
     
     return result
 

@@ -1,708 +1,437 @@
-# 🎯 AI Resume Optimizer
+# AI-Powered Resume Optimization and Job Description Alignment SaaS Application
 
-AI-powered Resume Optimization and Job Description Alignment SaaS Application.
+A comprehensive SaaS platform that uses artificial intelligence to optimize resumes and align them with job descriptions. The application provides resume parsing, job description analysis, skill matching, and personalized recommendations to help job seekers improve their applications.
 
-## 📋 Features
+## 🏗️ Project Architecture
 
-- ✅ **Resume Upload** - Upload PDF/DOCX files with drag & drop support
-- ✅ **Job Description Parsing** - Intelligent extraction of skills and requirements
-- ✅ **ATS Score Calculation** - Comprehensive scoring (0-100%) with breakdown
-- ✅ **Skills Analysis** - Matched and missing skills identification
-- ✅ **AI-Powered Recommendations** - Prioritized, actionable improvement suggestions
-- ✅ **User Authentication** - Secure JWT-based authentication system
-- ✅ **Analysis History Dashboard** - Track all analyses with trends and statistics
-- ✅ **Modern UI** - Professional glass-morphism design with Tailwind CSS
-- ✅ **Responsive Design** - Works seamlessly on mobile, tablet, and desktop
-- ✅ **Real-time Feedback** - Loading states, error handling, and success messages
-
-## 🛠️ Tech Stack
-
-### Backend
-
-- Python 3.11+
-- FastAPI
-- PostgreSQL
-- SQLAlchemy
-- spaCy (NLP)
-- scikit-learn
-
-### Frontend
-
-- **React.js 18+** - Modern React with hooks
-- **Vite** - Fast build tool and dev server
-- **Tailwind CSS 3+** - Utility-first CSS framework
-- **Axios** - HTTP client with interceptors
-- **React Router v6** - Client-side routing
-- **Lucide React** - Modern icon library
-- **Recharts** - Chart library for data visualization
-
-## 🚀 How to Run
-
-### Prerequisites
-
-- Docker & Docker Compose (Recommended)
-- OR Python 3.11+ & Node.js 18+
-- PostgreSQL 15+
-
----
-
-## Option 1: Docker (Recommended - Easiest)
-
-### Step 1: Clone and Navigate
-
-```bash
-git clone <repository-url>
-cd ai-resume-optimizer
-```
-
-### Step 2: Start with Docker Compose
-
-```bash
-# Start PostgreSQL and Backend
-cd backend
-docker-compose up --build
-
-# Wait for "Application startup complete" message
-```
-
-### Step 3: Access the Application
-
-- API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
-- Health Check: http://localhost:8000/health
-
-### Step 4: Start Frontend (in new terminal)
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-- Frontend: http://localhost:5173
-
----
-
-## Option 2: Local Development (Without Docker)
-
-### Backend Setup
-
-#### Step 1: Install PostgreSQL
-
-```bash
-# Ubuntu/Debian
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-
-# Start PostgreSQL
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-
-# Create database
-sudo -u postgres psql
-CREATE DATABASE resume_optimizer;
-\q
-```
-
-#### Step 2: Setup Backend
-
-```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-
-# Activate (Windows PowerShell)
-.\venv\Scripts\Activate.ps1
-
-# Activate (Windows CMD)
-venv\Scripts\activate.bat
-
-# Activate (Mac/Linux)
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Download spaCy model
-python -m spacy download en_core_web_sm
-
-# Create .env file (copy from .env.example and update)
-cp .env.example .env
-```
-
-#### Step 3: Update .env file
-
-```env
-DATABASE_URL=postgresql://postgres:your_password@localhost:5432/resume_optimizer
-SECRET_KEY=your-very-long-random-secret-key
-```
-
-#### Step 4: Run Backend
-
-```bash
-uvicorn app.main:app --reload
-```
-
-### Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
----
-
-## 📁 Project Structure
+### Overview
+This is a full-stack web application built with modern technologies:
 
 ```
-ai-resume-optimizer/
-├── backend/
-│   ├── app/
-│   │   ├── api/v1/        # API Routes
-│   │   ├── core/          # Security
-│   │   ├── db/            # Database
-│   │   ├── models/        # SQLAlchemy Models
-│   │   ├── schemas/       # Pydantic Schemas
-│   │   ├── ml/            # AI/ML Components
-│   │   └── main.py        # FastAPI App
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── docker-compose.yml
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   └── context/
-│   └── package.json
-└── README.md
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │     Backend     │    │   Database      │
+│   (React)       │◄──►│   (FastAPI)     │◄──►│  (PostgreSQL)   │
+│                 │    │                 │    │                 │
+│ - User Interface│    │ - API Endpoints │    │ - User Data     │
+│ - File Upload   │    │ - ML Processing │    │ - Resumes       │
+│ - Results Display│   │ - Authentication │    │ - Job Descriptions│
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
----
+### Components
 
-## 🔌 API Endpoints
+#### Backend (FastAPI)
+- **Framework**: FastAPI with async support
+- **Database**: PostgreSQL with SQLAlchemy ORM
+- **Authentication**: JWT tokens with bcrypt password hashing
+- **File Processing**: PDF and DOCX parsing with PyMuPDF and python-docx
+- **AI/ML**: spaCy for NLP, scikit-learn for similarity matching
+- **API Documentation**: Automatic OpenAPI/Swagger docs
 
-### Authentication
+#### Frontend (React)
+- **Framework**: React 18 with Vite build tool
+- **Styling**: Tailwind CSS for responsive design
+- **HTTP Client**: Axios for API communication
+- **Charts**: Recharts for data visualization
+- **Routing**: React Router for navigation
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/v1/auth/register | Register new user |
-| POST | /api/v1/auth/login | Login (form data) |
-| POST | /api/v1/auth/login/json | Login (JSON) |
-
-### Users
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/v1/users/me | Get current user |
-| GET | /api/v1/users/me/stats | Get user stats |
-| PUT | /api/v1/users/me | Update user |
-| DELETE | /api/v1/users/me | Delete account |
-
-### Resume
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/v1/resume/upload | Upload resume (PDF/DOCX) |
-| GET | /api/v1/resume/ | Get all resumes |
-| GET | /api/v1/resume/{id} | Get resume by ID |
-| DELETE | /api/v1/resume/{id} | Delete resume |
-
-### Job Description
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/v1/job/ | Create job description |
-| GET | /api/v1/job/ | Get all job descriptions |
-| GET | /api/v1/job/{id} | Get job by ID |
-| DELETE | /api/v1/job/{id} | Delete job |
-
-### Analysis
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/v1/analysis/analyze | Analyze resume vs job |
-| GET | /api/v1/analysis/ | Get analysis history |
-| GET | /api/v1/analysis/{id} | Get analysis by ID |
-| DELETE | /api/v1/analysis/{id} | Delete analysis |
-
-### Dashboard
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/v1/dashboard/stats | Get dashboard stats |
-
----
-
-## 🧪 Testing
-
-### Comprehensive Testing Guide
-
-For detailed testing procedures, see **[TESTING_GUIDE.md](./TESTING_GUIDE.md)**
-
-### Quick Test Flow
-
-1. **Register a new user:**
-   ```bash
-   curl -X POST http://localhost:8000/api/v1/auth/register \
-     -H "Content-Type: application/json" \
-     -d '{"email":"test@example.com","full_name":"Test User","password":"Test123456"}'
-   ```
-
-2. **Login and get token:**
-   ```bash
-   curl -X POST http://localhost:8000/api/v1/auth/login/json \
-     -H "Content-Type: application/json" \
-     -d '{"email":"test@example.com","password":"Test123456"}'
-   ```
-
-3. **Upload resume (replace YOUR_TOKEN):**
-   ```bash
-   curl -X POST http://localhost:8000/api/v1/resume/upload \
-     -H "Authorization: Bearer YOUR_TOKEN" \
-     -F "file=@resume.pdf"
-   ```
-
-4. **Create job description:**
-   ```bash
-   curl -X POST http://localhost:8000/api/v1/job/ \
-     -H "Authorization: Bearer YOUR_TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{"title":"Senior Developer","company":"Tech Corp","raw_text":"Job description text..."}'
-   ```
-
-5. **Run analysis:**
-   ```bash
-   curl -X POST http://localhost:8000/api/v1/analysis/analyze \
-     -H "Authorization: Bearer YOUR_TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{"resume_id":1,"job_id":1}'
-   ```
-
-### Using Swagger UI
-
-1. Start the backend server
-2. Navigate to http://localhost:8000/docs
-3. Click "Authorize" button
-4. Enter JWT token: `Bearer YOUR_TOKEN`
-5. Test any endpoint interactively
-
-### Frontend Testing
-
-1. Start both backend and frontend servers
-2. Open http://localhost:5173 in browser
-3. Open Developer Tools (F12) → Network tab
-4. Follow the complete user flow:
-   - Register → Login → Upload → Analyze → View Results → Dashboard
-5. Monitor API calls and responses
-6. Check console for errors
-
----
-
-## 🎨 UI Features
-
-### Design System
-
-- **Color Palette:**
-  - Primary: Blue (#0284c7 - primary-600)
-  - Secondary: Purple (#d946ef - secondary-500)
-  - Accent: Yellow (#eab308 - accent-500)
-  - Success: Green (#10b981)
-  - Error: Red (#ef4444)
-
-- **Components:**
-  - Glass-morphism cards with backdrop blur
-  - Gradient backgrounds
-  - Smooth transitions and animations
-  - Responsive grid layouts
-  - Modern icon system (Lucide React)
-
-### User Interface Pages
-
-1. **Home Page** (`/`)
-   - Hero section with call-to-action
-   - Features showcase
-   - How it works section
-   - Statistics display
-
-2. **Login Page** (`/login`)
-   - Glass-morphism card design
-   - Icon-based form inputs
-   - Error handling
-   - Link to signup
-
-3. **Signup Page** (`/signup`)
-   - Multi-field registration form
-   - Real-time validation
-   - Terms acceptance
-   - Success animation
-
-4. **Upload Page** (`/upload`)
-   - Drag & drop file upload
-   - Job description textarea
-   - Real-time validation
-   - Progress indicators
-
-5. **Results Page** (`/results/:id`)
-   - Circular ATS score display
-   - Score breakdown with progress bars
-   - Skills comparison (matched/missing)
-   - Prioritized recommendations
-   - Action buttons
-
-6. **Dashboard Page** (`/dashboard`)
-   - Statistics cards
-   - Score trend chart (Recharts)
-   - Analysis history table
-   - Empty state handling
-
----
-
-## 🔧 Environment Variables
-
-### Backend (.env)
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection URL | `postgresql://postgres:password123@localhost:5432/resume_optimizer` |
-| `SECRET_KEY` | JWT secret key (generate strong key) | Required |
-| `DEBUG` | Enable debug mode | `True` |
-| `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated) | `http://localhost:5173,http://localhost:3000` |
-| `UPLOAD_DIR` | Upload directory | `uploads` |
-| `MAX_FILE_SIZE` | Max file size in bytes | `5242880` (5MB) |
-
-### Frontend Configuration
-
-The frontend API base URL is configured in `src/services/api.jsx`:
-```javascript
-const API_BASE_URL = 'http://localhost:8000/api/v1';
-```
-
-For production, update this to your production API URL.
-
----
-
-## 📊 Database Schema
-
+#### Database Schema
 ```
 users
-├── id (PK)
-├── email (unique)
+├── id (Primary Key)
+├── email (Unique)
 ├── hashed_password
 ├── full_name
 ├── is_active
-├── created_at
-└── updated_at
+├── is_verified
+└── last_login
 
 resumes
-├── id (PK)
-├── user_id (FK → users)
+├── id (Primary Key)
+├── user_id (Foreign Key)
 ├── filename
-├── file_path
-├── raw_text
-├── parsed_data (JSON)
-├── skills (JSON)
-└── created_at
+├── file_content
+├── parsed_text
+├── skills_extracted
+└── upload_date
 
 job_descriptions
-├── id (PK)
-├── user_id (FK → users)
+├── id (Primary Key)
 ├── title
 ├── company
-├── raw_text
-├── required_skills (JSON)
-├── keywords (JSON)
-└── created_at
+├── description
+├── requirements
+├── skills_required
+└── created_date
 
 analyses
-├── id (PK)
-├── user_id (FK → users)
-├── resume_id (FK → resumes)
-├── job_id (FK → job_descriptions)
-├── ats_score
-├── score_breakdown (JSON)
-├── matched_skills (JSON)
-├── missing_skills (JSON)
-├── recommendations (JSON)
-└── created_at
+├── id (Primary Key)
+├── user_id (Foreign Key)
+├── resume_id (Foreign Key)
+├── job_id (Foreign Key)
+├── similarity_score
+├── matching_skills
+├── missing_skills
+├── recommendations
+└── created_date
 ```
 
----
+## 🚀 Quick Start
 
-## 🐛 Troubleshooting
+### Prerequisites
 
-### Common Issues
+#### For All Platforms
+- **Docker & Docker Compose**: Latest versions
+- **Git**: For cloning the repository
 
-#### 1. Network Error / Connection Refused
+#### For Local Development (Windows/Linux)
+- **Python**: 3.11 or higher
+- **Node.js**: 18.x or higher
+- **PostgreSQL**: 15.x or higher (if not using Docker)
 
-**Symptoms:** Frontend shows "Network Error" when calling API
+### Option 1: Docker Deployment (Recommended)
 
-**Solutions:**
-- ✅ Verify backend is running on `http://localhost:8000`
-- ✅ Check backend logs for errors
-- ✅ Verify CORS settings in backend allow `http://localhost:5173`
-- ✅ Check firewall isn't blocking port 8000
-- ✅ Test API directly: `curl http://localhost:8000/health`
+#### Windows Setup
+1. **Install Docker Desktop**:
+   - Download from https://www.docker.com/products/docker-desktop
+   - Run the installer and follow the setup wizard
+   - Enable WSL 2 if prompted
+   - Start Docker Desktop
 
-#### 2. Authentication Issues
+2. **Verify Installation**:
+   ```powershell
+   docker --version
+   docker-compose --version
+   ```
 
-**Symptoms:** "Invalid credentials" or token errors
+#### Linux Setup
+1. **Install Docker**:
+   ```bash
+   # Ubuntu/Debian
+   sudo apt update
+   sudo apt install docker.io docker-compose
+   sudo systemctl start docker
+   sudo systemctl enable docker
+   sudo usermod -aG docker $USER
 
-**Solutions:**
-- ✅ Check password meets requirements (min 8 characters)
-- ✅ Verify email format is correct
-- ✅ Check token is stored: `localStorage.getItem('token')`
-- ✅ Clear localStorage and try again
-- ✅ Check backend SECRET_KEY is set correctly
+   # Logout and login again for group changes to take effect
+   ```
 
-#### 3. File Upload Fails
+2. **Verify Installation**:
+   ```bash
+   docker --version
+   docker-compose --version
+   ```
 
-**Symptoms:** Resume upload shows error
+#### Running with Docker
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/LAIBAASIM555/AI-powered-Resume-Optimization-and-Job-Description-Alignment-SaaS-Application.git
+   cd AI-powered-Resume-Optimization-and-Job-Description-Alignment-SaaS-Application
+   ```
 
-**Solutions:**
-- ✅ Verify file is PDF or DOCX format
-- ✅ Check file size < 5MB
-- ✅ Ensure user is authenticated (has valid token)
-- ✅ Check backend `uploads/` directory exists and is writable
-- ✅ Verify backend has required dependencies (PyMuPDF, python-docx)
+2. **Start the application**:
+   ```bash
+   docker-compose up --build
+   ```
 
-#### 4. Buttons Not Visible
+3. **Access the application**:
+   - **Frontend**: http://localhost:80
+   - **Backend API**: http://localhost:8000
+   - **API Documentation**: http://localhost:8000/docs
 
-**Symptoms:** Buttons appear white on white
+4. **Stop the application**:
+   ```bash
+   docker-compose down
+   ```
 
-**Solutions:**
-- ✅ Clear browser cache (Ctrl+Shift+Delete)
-- ✅ Restart dev server: `npm run dev`
-- ✅ Verify Tailwind CSS is compiled: Check `index.css` imports
-- ✅ Check browser console for CSS errors
+### Option 2: Local Development Setup
 
-#### 5. PostgreSQL Connection Error
+#### Windows Setup
+1. **Install Python 3.11+**:
+   - Download from https://python.org
+   - Add to PATH during installation
 
-**Solutions:**
+2. **Install Node.js 18+**:
+   - Download from https://nodejs.org
+   - Use LTS version
+
+3. **Install PostgreSQL**:
+   - Download from https://postgresql.org
+   - Or use Docker: `docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=password123 postgres:15-alpine`
+
+#### Linux Setup
+1. **Install Python 3.11+**:
+   ```bash
+   # Ubuntu/Debian
+   sudo apt update
+   sudo apt install python3.11 python3.11-venv python3-pip
+
+   # CentOS/RHEL
+   sudo yum install python311 python311-pip
+   ```
+
+2. **Install Node.js 18+**:
+   ```bash
+   # Ubuntu/Debian
+   curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+   sudo apt-get install -y nodejs
+
+   # CentOS/RHEL
+   curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+   sudo yum install -y nodejs
+   ```
+
+3. **Install PostgreSQL**:
+   ```bash
+   # Ubuntu/Debian
+   sudo apt install postgresql postgresql-contrib
+
+   # Or use Docker
+   sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=password123 postgres:15-alpine
+   ```
+
+#### Local Development Steps
+1. **Clone and setup**:
+   ```bash
+   git clone https://github.com/LAIBAASIM555/AI-powered-Resume-Optimization-and-Job-Description-Alignment-SaaS-Application.git
+   cd AI-powered-Resume-Optimization-and-Job-Description-Alignment-SaaS-Application
+   ```
+
+2. **Backend setup**:
+   ```bash
+   cd backend
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   python -m spacy download en_core_web_sm
+   ```
+
+3. **Database setup**:
+   ```bash
+   # Create database
+   createdb resume_optimizer
+
+   # Or with Docker
+   docker run -d --name postgres -p 5432:5432 -e POSTGRES_DB=resume_optimizer -e POSTGRES_PASSWORD=password123 postgres:15-alpine
+   ```
+
+4. **Frontend setup**:
+   ```bash
+   cd ../frontend
+   npm install
+   npm run build
+   ```
+
+5. **Run the application**:
+   ```bash
+   # Terminal 1: Backend
+   cd backend
+   source venv/bin/activate
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+   # Terminal 2: Frontend
+   cd frontend
+   npm run dev
+   ```
+
+6. **Access the application**:
+   - **Frontend**: http://localhost:5173 (dev) or serve dist/ folder
+   - **Backend API**: http://localhost:8000
+   - **API Documentation**: http://localhost:8000/docs
+
+## 📊 Database Architecture
+
+### Tables Overview
+
+#### Users Table
+Manages user accounts and authentication.
+
+#### Resumes Table
+Stores uploaded resume files and parsed content.
+
+#### Job Descriptions Table
+Contains job posting information and requirements.
+
+#### Analyses Table
+Stores analysis results and recommendations.
+
+### Relationships
+- Users → Resumes (One-to-Many)
+- Users → Analyses (One-to-Many)
+- Resumes → Analyses (One-to-Many)
+- Job Descriptions → Analyses (One-to-Many)
+
+## 📦 Dependencies
+
+### Backend Dependencies
+```
+fastapi==0.110.0
+uvicorn[standard]==0.27.1
+python-multipart==0.0.9
+python-dotenv==1.0.1
+sqlalchemy==2.0.25
+psycopg2-binary==2.9.9
+alembic==1.13.1
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+pydantic==2.6.1
+pydantic-settings==2.1.0
+email-validator==2.1.0
+pymupdf==1.23.26
+python-docx==1.1.0
+spacy==3.7.4
+scikit-learn==1.4.0
+numpy==1.26.4
+pytest>=7.0.0,<8.0.0
+pytest-asyncio==0.23.4
+httpx==0.26.0
+aiofiles==23.2.1
+```
+
+### Frontend Dependencies
+```json
+{
+  "dependencies": {
+    "axios": "^1.6.2",
+    "lucide-react": "^0.294.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "recharts": "^2.10.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6",
+    "vite": "^5.0.8"
+  }
+}
+```
+
+## 🐳 Docker Configuration
+
+### Services
+- **db**: PostgreSQL 15 Alpine
+- **backend**: Python FastAPI application
+- **frontend**: Node.js React application served by Nginx
+
+### Volumes
+- `postgres_data`: Persistent database storage
+- `backend_uploads`: File upload storage
+
+### Networks
+- `app_network`: Isolated network for inter-service communication
+
+### Environment Variables
+- `DATABASE_URL`: PostgreSQL connection string
+- `SECRET_KEY`: JWT signing key
+- `DEBUG`: Debug mode flag
+- `ALLOWED_ORIGINS`: CORS allowed origins
+
+## 🔧 Configuration
+
+### Environment Variables
+Create a `.env` file in the backend directory:
+
 ```bash
-# Check if PostgreSQL is running
-sudo systemctl status postgresql  # Linux
-# OR check Services on Windows
-
-# Check if database exists
-sudo -u postgres psql -c "\l"
-
-# Verify connection string in .env
-DATABASE_URL=postgresql://postgres:password123@localhost:5432/resume_optimizer
+DATABASE_URL=postgresql://postgres:password123@db:5432/resume_optimizer
+SECRET_KEY=your-super-secret-key-here
+DEBUG=False
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:80
 ```
 
-#### 6. Port Already in Use
+### Database Configuration
+The application uses SQLAlchemy with connection pooling and automatic table creation.
 
-**Solutions:**
+## 🧪 Testing
+
+### Backend Tests
 ```bash
-# Windows PowerShell
-netstat -ano | findstr :8000
-taskkill /PID <PID> /F
-
-# Linux/Mac
-lsof -ti:8000 | xargs kill -9
-lsof -ti:5173 | xargs kill -9
-```
-
-#### 7. Docker Issues
-
-**Solutions:**
-```bash
-# Remove all containers and volumes
-docker-compose down -v
-
-# Rebuild from scratch
-docker-compose up --build --force-recreate
-
-# Check logs
-docker-compose logs -f
-```
-
-#### 8. Windows PowerShell Virtual Environment
-
-**Solutions:**
-```powershell
-# If you get execution policy error:
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-# Then activate:
-.\venv\Scripts\Activate.ps1
-
-# Or use activate.bat:
-.\venv\Scripts\activate.bat
-```
-
-#### 9. Frontend Build Errors
-
-**Symptoms:** npm install fails or build errors
-
-**Solutions:**
-```bash
-# Clear node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
-
-# Clear npm cache
-npm cache clean --force
-
-# Update dependencies
-npm update
-```
-
-#### 10. API Timeout Errors
-
-**Symptoms:** Requests timeout after 10 seconds
-
-**Solutions:**
-- ✅ Check backend is processing requests (check logs)
-- ✅ For large file uploads, increase timeout in `api.jsx`
-- ✅ Check network connection
-- ✅ Verify backend isn't stuck processing
-
----
-
-## 🧪 Running Tests
-
-```bash
-# Create test database first
-docker exec -it resume_postgres_db psql -U postgres -c "CREATE DATABASE resume_optimizer_test;"
-
-# Or if using local PostgreSQL
-psql -U postgres -c "CREATE DATABASE resume_optimizer_test;"
-
-# Run tests
 cd backend
-pytest -v
-
-# Run with coverage
-pytest --cov=app --cov-report=html
+source venv/bin/activate
+pytest
 ```
 
----
-
-## 📱 Application Flow
-
-### Complete User Journey
-
-1. **Landing** → User visits homepage
-2. **Registration** → User creates account
-3. **Login** → User authenticates
-4. **Upload** → User uploads resume and adds job description
-5. **Analysis** → System analyzes and generates report
-6. **Results** → User views ATS score and recommendations
-7. **Dashboard** → User tracks analysis history
-
-### Navigation Map
-
-```
-Home (/)
-  ├── Signup (/signup)
-  │   └── Login (/login)
-  │       └── Upload (/upload)
-  │           └── Results (/results/:id)
-  │               └── Dashboard (/dashboard)
-  └── Login (/login)
-      └── Upload (/upload)
-          └── Results (/results/:id)
-              └── Dashboard (/dashboard)
+### Frontend Tests
+```bash
+cd frontend
+npm test
 ```
 
----
+## 📚 API Documentation
 
-## 🔐 Security Features
+Once running, visit:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
-- **JWT Authentication** - Secure token-based authentication
-- **Password Hashing** - Bcrypt password hashing
-- **CORS Protection** - Configured allowed origins
-- **Input Validation** - Server-side validation with Pydantic
-- **File Type Validation** - Only PDF/DOCX allowed
-- **File Size Limits** - Maximum 5MB file size
-- **SQL Injection Protection** - SQLAlchemy ORM prevents SQL injection
-- **XSS Protection** - React automatically escapes content
-
----
-
-## 📈 Performance Optimizations
-
-- **API Timeout** - 10-second timeout prevents hanging requests
-- **Lazy Loading** - Components load on demand
-- **Optimized Queries** - Database queries optimized with indexes
-- **Caching** - Token stored in localStorage
-- **Code Splitting** - React Router code splitting
-- **Image Optimization** - Optimized assets
-
----
+### Key Endpoints
+- `POST /api/v1/auth/login`: User authentication
+- `POST /api/v1/resume/upload`: Upload resume
+- `POST /api/v1/job/`: Create job description
+- `POST /api/v1/analysis/`: Perform analysis
+- `GET /api/v1/dashboard/`: Get user dashboard
 
 ## 🚀 Deployment
 
-### Backend Deployment
+### Production Considerations
+1. **Environment Variables**: Use strong secrets
+2. **Database**: Use managed PostgreSQL service
+3. **File Storage**: Use cloud storage (AWS S3, etc.)
+4. **SSL/TLS**: Enable HTTPS
+5. **Monitoring**: Add logging and monitoring
+6. **Scaling**: Use container orchestration (Kubernetes)
 
-1. Set environment variables
-2. Build Docker image: `docker build -t resume-optimizer-backend .`
-3. Run container with PostgreSQL
-4. Update CORS settings for production domain
+### Docker Production
+```bash
+# Build for production
+docker-compose -f docker-compose.yml up --build -d
 
-### Frontend Deployment
+# View logs
+docker-compose logs -f
 
-1. Build production bundle: `npm run build`
-2. Serve `dist/` folder with nginx or similar
-3. Update API base URL in `api.jsx`
-4. Configure environment variables
+# Scale services
+docker-compose up -d --scale backend=3
+```
 
----
+## 🤝 Contributing
 
-## 📚 Additional Resources
-
-- **Testing Guide:** See [TESTING_GUIDE.md](./TESTING_GUIDE.md) for comprehensive testing procedures
-- **API Documentation:** Available at http://localhost:8000/docs when backend is running
-- **Backend Code:** Located in `backend/app/`
-- **Frontend Code:** Located in `frontend/src/`
-
----
-
-## 🎯 Quick Start Checklist
-
-- [ ] Install PostgreSQL and create database
-- [ ] Set up backend virtual environment
-- [ ] Install backend dependencies (`pip install -r requirements.txt`)
-- [ ] Configure `.env` file with database URL and SECRET_KEY
-- [ ] Start backend server (`uvicorn app.main:app --reload`)
-- [ ] Install frontend dependencies (`npm install`)
-- [ ] Start frontend dev server (`npm run dev`)
-- [ ] Open http://localhost:5173 in browser
-- [ ] Register a new account
-- [ ] Upload a resume and test the flow
-
----
-
-## 👥 Team
-
-- **Backend & AI/ML:** FastAPI, PostgreSQL, spaCy, scikit-learn
-- **Frontend & UI:** React, Tailwind CSS, Lucide Icons, Recharts
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
 ## 📄 License
 
-This project is part of Final Year Project (FYP).
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+#### Docker Issues
+- **Permission denied**: Run `sudo usermod -aG docker $USER` and logout/login
+- **Port already in use**: Change ports in docker-compose.yml
+- **Build fails**: Clear Docker cache with `docker system prune`
+
+#### Backend Issues
+- **Database connection fails**: Check DATABASE_URL and database availability
+- **spaCy model not found**: Run `python -m spacy download en_core_web_sm`
+- **Import errors**: Ensure all dependencies are installed
+
+#### Frontend Issues
+- **Build fails**: Clear node_modules and reinstall
+- **API calls fail**: Check backend URL and CORS settings
+
+### Getting Help
+- Check the issues page on GitHub
+- Review the API documentation
+- Check Docker and application logs
 
 ---
 
-## 🙏 Acknowledgments
-
-- FastAPI for the excellent web framework
-- React team for the amazing frontend library
-- Tailwind CSS for the utility-first CSS framework
-- Lucide for the beautiful icon set
-- All open-source contributors
-
----
-
-## 📞 Support
-
-For issues or questions:
-1. Check [TESTING_GUIDE.md](./TESTING_GUIDE.md) for common issues
-2. Review troubleshooting section above
-3. Check backend logs for errors
-4. Check browser console for frontend errors
-5. Verify all services are running correctly
+**Note**: For the URL issue you mentioned, use `http://localhost:8000` instead of `http://0.0.0.0:8000`. The `0.0.0.0` address binds to all interfaces inside the container but is not accessible from outside.

@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: str = "5432"
     POSTGRES_DB: str = "resume_optimizer"
-    DATABASE_URL: str = None  # Will be constructed if not provided
+    DATABASE_URL: str | None = None  # Will be constructed if not provided
     
     # File Upload
     UPLOAD_DIR: str = "uploads"

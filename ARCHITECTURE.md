@@ -1,53 +1,149 @@
-# 🏗️ AI Resume Optimizer - Complete Architecture Documentation
+# 🏗️ Architecture Documentation
 
-Complete project structure, database schema, and architecture documentation for AI agents and developers.
+## Project Overview
 
----
+Ye ek AI-powered Resume Optimization aur Job Description Alignment SaaS application hai jo machine learning ka use karke resumes ko optimize karta hai aur job descriptions ke saath align karta hai.
 
-## 📐 Project Overview
-
-**AI Resume Optimizer** is a full-stack web application that analyzes resumes against job descriptions using AI/ML techniques to calculate ATS (Applicant Tracking System) compatibility scores.
-
-**Tech Stack:**
-- **Backend:** Python 3.12, FastAPI, PostgreSQL, SQLAlchemy, spaCy, scikit-learn
-- **Frontend:** React 18, Vite, Tailwind CSS, Axios, React Router, Lucide Icons, Recharts
-- **Database:** PostgreSQL 15+
-- **Authentication:** JWT (JSON Web Tokens)
-
----
-
-## 📁 Project Root Structure
+## System Architecture
 
 ```
-D:\FYP\
-├── backend/                 # FastAPI Backend Application
-│   ├── app/                 # Main application code
-│   ├── alembic/            # Database migrations
-│   ├── tests/               # Backend tests
-│   ├── uploads/            # Uploaded resume files
-│   ├── venv/               # Python virtual environment
-│   ├── requirements.txt    # Python dependencies
-│   ├── Dockerfile          # Docker configuration
-│   └── docker-compose.yml  # Docker Compose setup
-│
-├── frontend/               # React Frontend Application
-│   ├── src/                # Source code
-│   ├── node_modules/       # Node dependencies
-│   ├── package.json        # Node dependencies & scripts
-│   ├── tailwind.config.js  # Tailwind CSS configuration
-│   ├── vite.config.js      # Vite build configuration
-│   └── Dockerfile          # Docker configuration
-│
-├── README.md               # Main documentation
-├── ARCHITECTURE.md         # This file
-├── TESTING_GUIDE.md        # Testing procedures
-├── TERMINAL_GUIDE.md        # Terminal commands guide
-└── QUICK_START.md          # Quick setup guide
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │     Backend     │    │   Database      │
+│   (React)       │◄──►│   (FastAPI)     │◄──►│  (PostgreSQL)   │
+│                 │    │                 │    │                 │
+│ - User Interface│    │ - API Endpoints │    │ - User Data     │
+│ - File Upload   │    │ - ML Processing │    │ - Resumes       │
+│ - Results Display│   │ - Authentication │    │ - Job Descriptions│
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
----
+## Components Detail
 
-## 🔧 Backend Architecture
+### Backend (FastAPI)
+- **Framework**: FastAPI with async support
+- **Database**: PostgreSQL with SQLAlchemy ORM
+- **Authentication**: JWT tokens with argon2 password hashing
+- **File Processing**: PDF aur DOCX parsing with PyMuPDF aur python-docx
+- **AI/ML**: spaCy for NLP, scikit-learn for similarity matching
+- **API Documentation**: Automatic OpenAPI/Swagger docs
+
+### Frontend (React)
+- **Framework**: React 18 with Vite build tool
+- **Styling**: Tailwind CSS for responsive design
+- **HTTP Client**: Axios for API communication
+- **Charts**: Recharts for data visualization
+- **Routing**: React Router for navigation
+
+### Database Schema
+
+#### Users Table
+User accounts aur authentication manage karta hai.
+
+#### Resumes Table
+Uploaded resume files aur parsed content store karta hai.
+
+#### Job Descriptions Table
+Job posting information aur requirements store karta hai.
+
+#### Analyses Table
+Analysis results aur recommendations store karta hai.
+
+### Relationships
+- Users → Resumes (One-to-Many)
+- Users → Analyses (One-to-Many)
+- Resumes → Analyses (One-to-Many)
+- Job Descriptions → Analyses (One-to-Many)
+
+## Technology Stack
+
+### Backend Technologies
+- Python 3.11+
+- FastAPI
+- PostgreSQL
+- SQLAlchemy
+- spaCy (NLP)
+- scikit-learn
+- argon2 (password hashing)
+- JWT (authentication)
+
+### Frontend Technologies
+- React.js 18+
+- Vite (build tool)
+- Tailwind CSS 3+
+- Axios (HTTP client)
+- React Router v6
+- Lucide React (icons)
+- Recharts (charts)
+
+### DevOps & Tools
+- Docker & Docker Compose
+- Nginx (reverse proxy)
+- Alembic (database migrations)
+- Pytest (testing)
+
+## Data Flow
+
+1. **User Registration/Login**
+   - Frontend → Backend API → Database
+   - JWT token generation aur validation
+
+2. **Resume Upload**
+   - File upload → Backend processing → spaCy parsing → Database storage
+
+3. **Job Description Creation**
+   - Text input → Backend processing → Skills extraction → Database storage
+
+4. **Analysis Process**
+   - Resume + Job Description → ML processing → Similarity scoring → Recommendations
+
+## Security Features
+
+- **Password Hashing**: Argon2 algorithm
+- **JWT Authentication**: Secure token-based auth
+- **CORS Protection**: Configured allowed origins
+- **Input Validation**: Pydantic schemas
+- **File Type Validation**: PDF/DOCX only
+- **SQL Injection Protection**: SQLAlchemy ORM
+
+## Performance Optimizations
+
+- **Async Processing**: FastAPI async endpoints
+- **Database Connection Pooling**: SQLAlchemy pooling
+- **File Caching**: Optimized file handling
+- **Lazy Loading**: Database relationships
+- **API Rate Limiting**: Built-in FastAPI features
+
+## Deployment Architecture
+
+### Docker Containers
+- **db**: PostgreSQL database container
+- **backend**: FastAPI application container
+- **frontend**: React application with Nginx
+
+### Networking
+- **app_network**: Isolated Docker network
+- **Port Mapping**: 80 (frontend), 8000 (backend), 5432 (database)
+
+### Environment Variables
+- DATABASE_URL
+- SECRET_KEY
+- DEBUG
+- ALLOWED_ORIGINS
+
+## Monitoring & Logging
+
+- **Health Checks**: Built-in Docker health checks
+- **API Logging**: Request/response logging
+- **Error Handling**: Comprehensive error responses
+- **Database Monitoring**: Connection health checks
+
+## Future Enhancements
+
+- **Microservices**: Individual services for ML processing
+- **Message Queue**: Async job processing (Redis/Celery)
+- **Load Balancing**: Multiple backend instances
+- **CDN**: Static file serving optimization
+- **Monitoring**: Prometheus/Grafana integration
 
 ### Backend Directory Structure
 
