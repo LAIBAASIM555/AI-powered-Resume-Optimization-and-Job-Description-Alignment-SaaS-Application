@@ -14,7 +14,7 @@ This is a full-stack web application built with modern technologies:
 │                 │    │                 │    │                 │
 │ - User Interface│    │ - API Endpoints │    │ - User Data     │
 │ - File Upload   │    │ - ML Processing │    │ - Resumes       │
-│ - Results Display│   │ - Authentication │    │ - Job Descriptions│
+│ - Results Display│   │ - Authentication│   │ - Job Descriptions│
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
