@@ -1,17 +1,129 @@
 # 🗄️ Database Documentation
 
+Complete database documentation for the AI Resume Optimizer project.
+
 ## Database Overview
 
-Ye project PostgreSQL database use karta hai jo saari user data, resumes, job descriptions, aur analysis results store karta hai.
+This project uses PostgreSQL database to store user data, resumes, job descriptions, and analysis results.
 
-## Database Schema
+---
 
-### Tables Detail
+## ER Diagram (Entity-Relationship)
 
-#### 1. Users Table
+```mermaid
+erDiagram
+    USERS ||--o{ RESUMES : "uploads"
+    USERS ||--o{ JOB_DESCRIPTIONS : "creates"
+    USERS ||--o{ ANALYSES : "performs"
+    RESUMES ||--o{ ANALYSES : "analyzed_in"
+    JOB_DESCRIPTIONS ||--o{ ANALYSES : "compared_with"
+
+    USERS {
+        int id PK
+        varchar email UK
+        varchar hashed_password
+        varchar full_name
+        boolean is_active
+        boolean is_verified
+        timestamp last_login
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    RESUMES {
+        int id PK
+        int user_id FK
+        varchar filename
+        varchar file_path
+        varchar file_type
+        int file_size
+        text raw_text
+        json parsed_data
+        json skills
+        timestamp upload_date
+    }
+
+    JOB_DESCRIPTIONS {
+        int id PK
+        int user_id FK
+        varchar title
+        varchar company
+        varchar location
+        text raw_text
+        json parsed_data
+        json required_skills
+        json keywords
+        timestamp created_date
+    }
+
+    ANALYSES {
+        int id PK
+        int user_id FK
+        int resume_id FK
+        int job_id FK
+        float ats_score
+        json score_breakdown
+        json matched_skills
+        json missing_skills
+        json extra_skills
+        json recommendations
+        timestamp created_date
+    }
+```
+
+---
+
+## Relationships Diagram
+
+```mermaid
+flowchart TD
+    subgraph Users
+        U[Users Table]
+    end
+
+    subgraph Content
+        R[Resumes Table]
+        J[Job Descriptions Table]
+    end
+
+    subgraph Results
+        A[Analyses Table]
+    end
+
+    U -->|1:N| R
+    U -->|1:N| J
+    U -->|1:N| A
+    R -->|1:N| A
+    J -->|1:N| A
+```
+
+---
+
+## Data Flow Diagram
+
+```mermaid
+flowchart LR
+    A[User Registration] --> B[(Users Table)]
+    C[Resume Upload] --> D[(Resumes Table)]
+    E[Job Description] --> F[(Job Descriptions Table)]
+    
+    D --> G[Analysis Process]
+    F --> G
+    G --> H[(Analyses Table)]
+    
+    B --> I[Authentication]
+    I --> J[JWT Token]
+```
+
+---
+
+## Tables Detail
+
+### 1. Users Table
+
 ```sql
 CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     hashed_password VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
@@ -21,356 +133,220 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+CREATE INDEX idx_users_email ON users(email);
 ```
 
-**Fields:**
-- `id`: Primary key, auto-increment
-- `email`: Unique email address
-- `hashed_password`: Argon2 hashed password
-- `full_name`: User's full name
-- `is_active`: Account status
-- `is_verified`: Email verification status
-- `last_login`: Last login timestamp
-- `created_at/updated_at`: Timestamps
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | SERIAL | PRIMARY KEY | Unique identifier |
+| email | VARCHAR(255) | UNIQUE, NOT NULL | User email |
+| hashed_password | VARCHAR(255) | NOT NULL | Argon2 hash |
+| full_name | VARCHAR(100) | NOT NULL | Display name |
+| is_active | BOOLEAN | DEFAULT TRUE | Account status |
+| is_verified | BOOLEAN | DEFAULT FALSE | Email verified |
+| last_login | TIMESTAMP | NULLABLE | Last login time |
+| created_at | TIMESTAMP | NOT NULL | Creation time |
+| updated_at | TIMESTAMP | NOT NULL | Update time |
 
-#### 2. Resumes Table
+---
+
+### 2. Resumes Table
+
 ```sql
 CREATE TABLE resumes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     filename VARCHAR(255) NOT NULL,
-    file_content BYTEA,
-    parsed_text TEXT,
-    skills_extracted JSON,
-    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    file_path VARCHAR(500) NOT NULL,
+    file_type VARCHAR(10) NOT NULL,
+    file_size INTEGER NOT NULL,
+    raw_text TEXT,
+    parsed_data JSONB,
+    skills JSONB,
+    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+CREATE INDEX idx_resumes_user_id ON resumes(user_id);
 ```
 
-**Fields:**
-- `id`: Primary key, auto-increment
-- `user_id`: Foreign key to users table
-- `filename`: Original file name
-- `file_content`: Binary file data
-- `parsed_text`: Extracted text from PDF/DOCX
-- `skills_extracted`: JSON array of extracted skills
-- `upload_date`: Upload timestamp
+| Column | Type | Description |
+|--------|------|-------------|
+| id | SERIAL | Primary key |
+| user_id | INTEGER | Foreign key to users |
+| filename | VARCHAR(255) | Original filename |
+| file_path | VARCHAR(500) | Server storage path |
+| file_type | VARCHAR(10) | pdf or docx |
+| file_size | INTEGER | Size in bytes |
+| raw_text | TEXT | Extracted text |
+| parsed_data | JSONB | Structured data |
+| skills | JSONB | Extracted skills array |
+| upload_date | TIMESTAMP | Upload timestamp |
 
-#### 3. Job Descriptions Table
+---
+
+### 3. Job Descriptions Table
+
 ```sql
 CREATE TABLE job_descriptions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(255),
     company VARCHAR(255),
-    description TEXT NOT NULL,
-    requirements TEXT,
-    skills_required JSON,
+    location VARCHAR(255),
+    raw_text TEXT NOT NULL,
+    parsed_data JSONB,
+    required_skills JSONB,
+    keywords JSONB,
     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+CREATE INDEX idx_job_descriptions_user_id ON job_descriptions(user_id);
 ```
 
-**Fields:**
-- `id`: Primary key, auto-increment
-- `title`: Job title
-- `company`: Company name
-- `description`: Full job description
-- `requirements`: Job requirements text
-- `skills_required`: JSON array of required skills
-- `created_date`: Creation timestamp
+| Column | Type | Description |
+|--------|------|-------------|
+| id | SERIAL | Primary key |
+| user_id | INTEGER | Foreign key to users |
+| title | VARCHAR(255) | Job title |
+| company | VARCHAR(255) | Company name |
+| raw_text | TEXT | Full description |
+| required_skills | JSONB | Skills array |
+| keywords | JSONB | Keywords array |
 
-#### 4. Analyses Table
+---
+
+### 4. Analyses Table
+
 ```sql
 CREATE TABLE analyses (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    resume_id INTEGER NOT NULL,
-    job_id INTEGER NOT NULL,
-    similarity_score FLOAT NOT NULL,
-    matching_skills JSON,
-    missing_skills JSON,
-    recommendations JSON,
-    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (resume_id) REFERENCES resumes(id) ON DELETE CASCADE,
-    FOREIGN KEY (job_id) REFERENCES job_descriptions(id) ON DELETE CASCADE
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    resume_id INTEGER NOT NULL REFERENCES resumes(id) ON DELETE CASCADE,
+    job_id INTEGER NOT NULL REFERENCES job_descriptions(id) ON DELETE CASCADE,
+    ats_score FLOAT NOT NULL,
+    score_breakdown JSONB,
+    matched_skills JSONB,
+    missing_skills JSONB,
+    extra_skills JSONB,
+    matched_keywords JSONB,
+    missing_keywords JSONB,
+    recommendations JSONB,
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
-```
 
-**Fields:**
-- `id`: Primary key, auto-increment
-- `user_id`: Foreign key to users table
-- `resume_id`: Foreign key to resumes table
-- `job_id`: Foreign key to job_descriptions table
-- `similarity_score`: ML-calculated similarity score (0-100)
-- `matching_skills`: JSON array of matching skills
-- `missing_skills`: JSON array of missing skills
-- `recommendations`: JSON array of AI recommendations
-- `created_date`: Analysis timestamp
-
-## Relationships
-
-```
-users (1) ──── (many) resumes
-users (1) ──── (many) analyses
-resumes (1) ──── (many) analyses
-job_descriptions (1) ──── (many) analyses
-```
-
-## Database Configuration
-
-### Connection Settings
-```python
-DATABASE_URL = "postgresql://postgres:password123@db:5432/resume_optimizer"
-```
-
-### SQLAlchemy Configuration
-```python
-engine = create_engine(
-    settings.database_url,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
-    echo=settings.DEBUG
-)
-```
-
-## Indexes
-
-### Performance Indexes
-```sql
--- Users table indexes
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_created_at ON users(created_at);
-
--- Resumes table indexes
-CREATE INDEX idx_resumes_user_id ON resumes(user_id);
-CREATE INDEX idx_resumes_upload_date ON resumes(upload_date);
-
--- Job descriptions indexes
-CREATE INDEX idx_job_descriptions_created_date ON job_descriptions(created_date);
-
--- Analyses table indexes
 CREATE INDEX idx_analyses_user_id ON analyses(user_id);
 CREATE INDEX idx_analyses_resume_id ON analyses(resume_id);
 CREATE INDEX idx_analyses_job_id ON analyses(job_id);
-CREATE INDEX idx_analyses_created_date ON analyses(created_date);
-CREATE INDEX idx_analyses_similarity_score ON analyses(similarity_score);
 ```
 
-## Data Types
+---
 
-### JSON Fields Structure
+## JSON Field Structures
 
-#### skills_extracted (Resumes)
+### score_breakdown
 ```json
-[
-    "Python",
-    "JavaScript",
-    "React",
-    "FastAPI",
-    "PostgreSQL"
-]
+{
+    "skills_score": 85,
+    "keywords_score": 78,
+    "experience_score": 82,
+    "format_score": 90,
+    "achievements_score": 75
+}
 ```
 
-#### skills_required (Job Descriptions)
+### skills (Resumes)
 ```json
-[
-    "Python",
-    "Django",
-    "REST API",
-    "PostgreSQL",
-    "Docker"
-]
+["Python", "JavaScript", "React", "PostgreSQL", "Docker"]
 ```
 
-#### matching_skills (Analyses)
-```json
-[
-    {"skill": "Python", "match_score": 0.95},
-    {"skill": "PostgreSQL", "match_score": 0.88}
-]
-```
-
-#### missing_skills (Analyses)
-```json
-[
-    {"skill": "Django", "importance": "high"},
-    {"skill": "Docker", "importance": "medium"}
-]
-```
-
-#### recommendations (Analyses)
+### recommendations (Analyses)
 ```json
 [
     {
-        "type": "skill",
         "priority": "high",
-        "title": "Learn Django",
-        "description": "Add Django framework to your skill set"
+        "category": "skills",
+        "message": "Add Docker experience",
+        "details": "Docker is required for this position"
     },
     {
-        "type": "experience",
         "priority": "medium",
-        "title": "Gain Docker experience",
-        "description": "Get hands-on experience with containerization"
+        "category": "keywords",
+        "message": "Include 'microservices' keyword",
+        "details": "Job description mentions microservices"
     }
 ]
 ```
 
+---
+
+## Cascade Delete Rules
+
+```mermaid
+flowchart TD
+    A[Delete User] --> B[Delete All User's Resumes]
+    A --> C[Delete All User's Job Descriptions]
+    A --> D[Delete All User's Analyses]
+    
+    E[Delete Resume] --> F[Delete Analyses using this Resume]
+    G[Delete Job Description] --> H[Delete Analyses using this Job]
+```
+
+---
+
 ## Database Operations
 
-### Common Queries
-
-#### Get User with Resumes
-```sql
-SELECT u.*, r.filename, r.upload_date
-FROM users u
-LEFT JOIN resumes r ON u.id = r.user_id
-WHERE u.id = ?
+### Backup
+```bash
+docker exec resume_db pg_dump -U postgres resume_optimizer > backup.sql
 ```
 
-#### Get Analysis Results
+### Restore
+```bash
+docker exec -i resume_db psql -U postgres resume_optimizer < backup.sql
+```
+
+### Connect
+```bash
+docker exec -it resume_db psql -U postgres -d resume_optimizer
+```
+
+### Common Queries
 ```sql
-SELECT a.*, r.filename, jd.title, jd.company
+-- Get user's analysis history
+SELECT a.*, r.filename, j.title 
 FROM analyses a
 JOIN resumes r ON a.resume_id = r.id
-JOIN job_descriptions jd ON a.job_id = jd.id
-WHERE a.user_id = ?
-ORDER BY a.created_date DESC
+JOIN job_descriptions j ON a.job_id = j.id
+WHERE a.user_id = 1
+ORDER BY a.created_date DESC;
+
+-- Get average score per user
+SELECT user_id, AVG(ats_score) as avg_score
+FROM analyses
+GROUP BY user_id;
 ```
 
-#### Get Top Skills
-```sql
-SELECT skill, COUNT(*) as frequency
-FROM (
-    SELECT json_array_elements_text(skills_extracted) as skill
-    FROM resumes
-) skills
-GROUP BY skill
-ORDER BY frequency DESC
-LIMIT 10
+---
+
+## Connection Configuration
+
+```python
+DATABASE_URL = "postgresql://postgres:password123@db:5432/resume_optimizer"
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_size=10,
+    max_overflow=20
+)
 ```
 
-## Backup & Recovery
+---
 
-### Database Backup
-```bash
-# Docker container backup
-docker exec resume_db pg_dump -U postgres resume_optimizer > backup.sql
-
-# Direct PostgreSQL backup
-pg_dump -U postgres -h localhost -d resume_optimizer > backup.sql
-```
-
-### Database Restore
-```bash
-# Docker container restore
-docker exec -i resume_db psql -U postgres resume_optimizer < backup.sql
-
-# Direct PostgreSQL restore
-psql -U postgres -h localhost -d resume_optimizer < backup.sql
-```
-
-## Performance Monitoring
-
-### Query Performance
-```sql
--- Check slow queries
-SELECT query, calls, total_time, mean_time, rows
-FROM pg_stat_statements
-ORDER BY total_time DESC
-LIMIT 10;
-
--- Check table sizes
-SELECT schemaname, tablename,
-       pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
-FROM pg_tables
-WHERE schemaname = 'public'
-ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
-```
-
-### Connection Monitoring
-```sql
--- Check active connections
-SELECT count(*) as active_connections
-FROM pg_stat_activity
-WHERE state = 'active';
-
--- Check connection states
-SELECT state, count(*)
-FROM pg_stat_activity
-GROUP BY state;
-```
-
-## Migration Strategy
-
-### Using Alembic
-```bash
-# Create new migration
-alembic revision -m "Add new table"
-
-# Run migrations
-alembic upgrade head
-
-# Downgrade
-alembic downgrade -1
-```
-
-## Security Considerations
+## Security
 
 - **Password Hashing**: Argon2 algorithm
-- **SQL Injection Protection**: Parameterized queries
-- **Connection Encryption**: SSL/TLS enabled
-- **Access Control**: Row-level security
-- **Audit Logging**: All changes logged
-
-## Troubleshooting
-
-### Common Issues
-
-#### Connection Refused
-```bash
-# Check if PostgreSQL is running
-docker ps | grep postgres
-
-# Check logs
-docker logs resume_db
-```
-
-#### Slow Queries
-```bash
-# Enable query logging
-ALTER SYSTEM SET log_statement = 'all';
-ALTER SYSTEM SET log_duration = on;
-
-# Check running queries
-SELECT * FROM pg_stat_activity WHERE state = 'active';
-```
-
-#### Disk Space Issues
-```bash
-# Check database size
-SELECT pg_size_pretty(pg_database_size('resume_optimizer'));
-
-# Vacuum database
-VACUUM FULL;
-```
-
-## Development Setup
-
-### Local Database
-```bash
-# Start PostgreSQL with Docker
-docker run -d --name postgres \
-  -e POSTGRES_DB=resume_optimizer \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=password123 \
-  -p 5432:5432 \
-  postgres:15-alpine
-```
-
-### Database GUI Tools
-- **pgAdmin**: Web-based PostgreSQL admin
-- **DBeaver**: Universal database tool
-- **TablePlus**: Modern database client
-- **psql**: Command-line client
+- **SQL Injection Protection**: SQLAlchemy ORM
+- **Cascade Deletes**: Proper foreign key constraints
+- **Indexes**: Optimized for common queries

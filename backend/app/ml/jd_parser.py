@@ -5,6 +5,8 @@ import re
 from typing import Dict, Any, List, Set
 import spacy
 
+from app.ml.skills_database import find_skills_in_text, ALL_SKILLS
+
 # Try to load spaCy model
 try:
     nlp = spacy.load("en_core_web_sm")
@@ -21,36 +23,9 @@ class JDParser:
         if nlp is None:
             raise RuntimeError("spaCy model not loaded. Please install: python -m spacy download en_core_web_sm")
         
-        # Define known skills set (same as ResumeParser)
-        self.known_skills: Set[str] = {
-            # Programming Languages
-            "python", "java", "javascript", "typescript", "c++", "c#", "c", "go", "rust",
-            "ruby", "php", "swift", "kotlin", "scala", "r", "matlab", "perl", "shell",
-            "bash", "powershell",
-            
-            # Web Technologies
-            "react", "angular", "vue", "node.js", "express", "django", "flask", "fastapi",
-            "spring", "asp.net", "laravel", "symfony", "rails", "next.js", "nuxt.js",
-            "html", "css", "sass", "less", "bootstrap", "tailwind", "jquery",
-            
-            # Databases
-            "sql", "mysql", "postgresql", "mongodb", "redis", "cassandra", "elasticsearch",
-            "oracle", "sqlite", "dynamodb", "neo4j", "firebase",
-            
-            # Cloud/DevOps
-            "aws", "azure", "gcp", "docker", "kubernetes", "jenkins", "git", "github",
-            "gitlab", "ci/cd", "terraform", "ansible", "chef", "puppet", "nginx",
-            "apache", "linux", "unix",
-            
-            # Data Science
-            "machine learning", "deep learning", "tensorflow", "pytorch", "keras",
-            "pandas", "numpy", "scikit-learn", "jupyter", "data analysis", "data science",
-            "nlp", "computer vision", "statistics",
-            
-            # Other
-            "agile", "scrum", "kanban", "rest api", "graphql", "microservices",
-            "api development", "testing", "tdd", "bdd"
-        }
+        # Use comprehensive skills database (1500+ skills)
+        self.known_skills: Set[str] = set(ALL_SKILLS)
+
         
         # Requirement indicators
         self.requirement_indicators = [

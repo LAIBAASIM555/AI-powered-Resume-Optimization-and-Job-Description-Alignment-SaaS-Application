@@ -9,7 +9,8 @@ from app.models.job import JobDescription
 from app.models.analysis import Analysis
 from app.schemas.analysis import AnalysisRequest, AnalysisResponse, AnalysisHistory
 from app.ml.scorer import ATSScorer
-from app.ml.recommender import Recommender
+from app.ml.recommender import ResumeRecommender
+from app.ml.jd_parser import JDParser
 
 router = APIRouter()
 
@@ -28,20 +29,46 @@ async def analyze_resume(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job description not found")
     
     try:
+        # Parse job description if not already parsed
+        if not job.required_skills or not job.keywords:
+            jd_parser = JDParser()
+            jd_data = jd_parser.parse(job.raw_text)
+            
+            # Update job record with parsed data
+            job.required_skills = jd_data.get("required_skills", [])
+            job.keywords = jd_data.get("keywords", [])
+            # Store preferred_skills in parsed_data
+            job.parsed_data = jd_data
+            db.commit()
+        
+        # Calculate ATS score
         scorer = ATSScorer()
+        # Get preferred_skills from parsed_data
+        preferred_skills = (job.parsed_data or {}).get("preferred_skills", [])
+        
         score_result = scorer.calculate_score(
             resume_skills=resume.skills or [],
             resume_text=resume.raw_text or "",
-            job_skills=job.required_skills or [],
+            job_skills=(job.required_skills or []) + preferred_skills,
             job_keywords=job.keywords or [],
             job_text=job.raw_text
         )
         
-        recommender = Recommender()
-        recommendations = recommender.get_recommendations(
-            matched_skills=score_result["matched_skills"],
-            missing_skills=score_result["missing_skills"],
-            score_breakdown=score_result["breakdown"]
+        # Generate recommendations using new ResumeRecommender
+        recommender = ResumeRecommender()
+        
+        # Prepare job data for recommender
+        job_data = {
+            "required_skills": job.required_skills or [],
+            "preferred_skills": preferred_skills,
+            "keywords": job.keywords or [],
+        }
+        
+        # Generate recommendations
+        recommendations = recommender.generate_recommendations(
+            resume_data=resume.parsed_data or {},
+            job_data=job_data,
+            score_data=score_result
         )
         
         original_summary = resume.parsed_data.get("summary", "") if resume.parsed_data else ""

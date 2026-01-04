@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react';
+import { Upload, FileText, X, AlertCircle } from 'lucide-react';
 
 const FileUpload = ({ onFileSelect, selectedFile }) => {
   const [dragActive, setDragActive] = useState(false);
+  const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
   const handleDrag = (e) => {
@@ -18,6 +20,7 @@ const FileUpload = ({ onFileSelect, selectedFile }) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
+    setError('');
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0]);
@@ -25,29 +28,57 @@ const FileUpload = ({ onFileSelect, selectedFile }) => {
   };
 
   const handleFileInput = (e) => {
+    setError('');
     if (e.target.files && e.target.files[0]) {
       handleFile(e.target.files[0]);
     }
   };
 
   const handleFile = (file) => {
-    // Validate file type
-    const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (!validTypes.includes(file.type)) {
-      alert('Please upload a PDF or DOCX file');
+    // Get file extension
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.split('.').pop();
+
+    // Validate file extension (more reliable than MIME type)
+    const validExtensions = ['pdf', 'docx'];
+    if (!validExtensions.includes(fileExtension)) {
+      setError('❌ Invalid file type! Please upload a PDF or DOCX file only.');
+      onFileSelect(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
+    }
+
+    // Also check MIME type as secondary validation
+    const validTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+
+    // Some browsers may not detect MIME type correctly, so we rely on extension primarily
+    if (file.type && !validTypes.includes(file.type) && file.type !== '') {
+      // Log for debugging but don't block if extension is valid
+      console.warn('MIME type mismatch:', file.type, 'but extension is valid:', fileExtension);
     }
 
     // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      setError('❌ File too large! Maximum file size is 5MB.');
+      onFileSelect(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
 
+    // Clear any previous errors
+    setError('');
     onFileSelect(file);
   };
 
   const removeFile = () => {
+    setError('');
     onFileSelect(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -56,11 +87,20 @@ const FileUpload = ({ onFileSelect, selectedFile }) => {
 
   return (
     <div className="w-full">
+      {/* Error Message */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 flex items-center">
+          <AlertCircle className="h-5 w-5 mr-3 flex-shrink-0" />
+          <span className="font-medium">{error}</span>
+        </div>
+      )}
+
       {!selectedFile ? (
         <div
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-            dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400'
-          }`}
+          className={`border-3 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all duration-300 ${dragActive
+            ? 'border-primary-500 bg-primary-50 scale-[1.02]'
+            : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+            }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -74,43 +114,46 @@ const FileUpload = ({ onFileSelect, selectedFile }) => {
             onChange={handleFileInput}
             className="hidden"
           />
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            stroke="currentColor"
-            fill="none"
-            viewBox="0 0 48 48"
-          >
-            <path
-              d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <p className="mt-2 text-sm text-gray-600">
-            <span className="font-semibold">Click to upload</span> or drag and drop
-          </p>
-          <p className="text-xs text-gray-500 mt-1">PDF or DOCX (MAX. 5MB)</p>
+
+          <div className="flex flex-col items-center">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-all duration-300 ${dragActive ? 'bg-primary-100' : 'bg-gray-100'
+              }`}>
+              <Upload className={`h-8 w-8 transition-colors ${dragActive ? 'text-primary-600' : 'text-gray-400'}`} />
+            </div>
+
+            <p className="text-lg font-semibold text-gray-700 mb-1">
+              📄 Drag & Drop your resume here
+            </p>
+            <p className="text-gray-500 mb-4">OR</p>
+            <button
+              type="button"
+              className="px-6 py-2.5 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors shadow-md hover:shadow-lg"
+            >
+              Browse File
+            </button>
+            <p className="text-xs text-gray-400 mt-4">
+              PDF or DOCX only • Maximum 5MB
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+        <div className="border-2 border-green-200 rounded-2xl p-6 bg-green-50">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <svg className="h-8 w-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <FileText className="h-6 w-6 text-green-600" />
+              </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
+                <p className="text-sm font-semibold text-gray-900">{selectedFile.name}</p>
                 <p className="text-xs text-gray-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
             </div>
             <button
               onClick={removeFile}
-              className="text-red-500 hover:text-red-700"
+              className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+              title="Remove file"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="h-5 w-5" />
             </button>
           </div>
         </div>
@@ -120,4 +163,5 @@ const FileUpload = ({ onFileSelect, selectedFile }) => {
 };
 
 export default FileUpload;
+
 

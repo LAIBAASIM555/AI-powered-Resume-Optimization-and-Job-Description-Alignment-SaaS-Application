@@ -29,12 +29,22 @@ class Settings(BaseSettings):
     DATABASE_URL: str | None = None  # Will be constructed if not provided
     
     # File Upload
-    UPLOAD_DIR: str = "uploads"
+    UPLOAD_DIR: str = "uploads/resumes"
     MAX_FILE_SIZE: int = 5 * 1024 * 1024  # 5MB
     ALLOWED_EXTENSIONS: List[str] = ["pdf", "docx"]
     
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
+    
+    # AI/ML API Keys (Optional - for enhanced parsing)
+    OPENAI_API_KEY: str = ""
+    GOOGLE_API_KEY: str = ""
+    AI_SERVICE_PREFERRED: str = "local"  # openai, gemini, or local
+    
+    # Feature Flags
+    USE_AI_PARSING: bool = False
+    ENABLE_OCR: bool = False
+
     
     @property
     def database_url(self) -> str:
@@ -57,6 +67,6 @@ class Settings(BaseSettings):
 # Create settings instance
 settings = Settings()
 
-# Create upload directory if not exists
+# Create upload directories (uploads/resumes)
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 

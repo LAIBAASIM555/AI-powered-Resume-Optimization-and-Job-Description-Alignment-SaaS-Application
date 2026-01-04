@@ -28,56 +28,56 @@ const JobInput = ({ onJobChange, jobData }) => {
   };
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-5">
+      {/* Job Title Input */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Job Title (Optional)
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Job Title <span className="text-gray-400 font-normal">(Optional)</span>
         </label>
         <input
           type="text"
           value={title}
           onChange={handleTitleChange}
-          placeholder="e.g., Software Engineer"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="e.g. Software Engineer – Backend"
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-gray-50 hover:bg-white"
         />
       </div>
 
+      {/* Company Input */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Company (Optional)
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Company <span className="text-gray-400 font-normal">(Optional)</span>
         </label>
         <input
           type="text"
           value={company}
           onChange={handleCompanyChange}
-          placeholder="e.g., Google"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="e.g. Google, Amazon"
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-gray-50 hover:bg-white"
         />
       </div>
 
+      {/* Job Description Textarea */}
       <div>
         <div className="flex justify-between items-center mb-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Job Description
+          <label className="block text-sm font-semibold text-gray-700">
+            Job Description <span className="text-red-500">*</span>
           </label>
-          <div className="flex items-center space-x-2">
-            <span className="text-xs text-gray-500">{description.length} characters</span>
-            {description && (
-              <button
-                onClick={handleClear}
-                className="text-xs text-red-500 hover:text-red-700"
-              >
-                Clear
-              </button>
-            )}
-          </div>
+          {description && (
+            <button
+              onClick={handleClear}
+              className="text-xs text-red-500 hover:text-red-700 font-medium transition-colors"
+            >
+              Clear All
+            </button>
+          )}
         </div>
         <textarea
           value={description}
           onChange={handleDescriptionChange}
-          placeholder="Paste the job description here..."
-          rows={12}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          placeholder="Paste the full job description here to compare skills, keywords, and ATS compatibility."
+          rows={10}
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-gray-50 hover:bg-white resize-none"
         />
       </div>
     </div>
@@ -85,4 +85,5 @@ const JobInput = ({ onJobChange, jobData }) => {
 };
 
 export default JobInput;
+
 

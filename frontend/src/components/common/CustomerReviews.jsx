@@ -1,6 +1,11 @@
 import { Star, Quote } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import AnimatedCounter from './AnimatedCounter';
 
 const CustomerReviews = () => {
+  const [isPaused, setIsPaused] = useState(false);
+  const scrollRef = useRef(null);
+
   const reviews = [
     {
       name: "Sarah Johnson",
@@ -52,6 +57,9 @@ const CustomerReviews = () => {
     }
   ];
 
+  // Duplicate reviews for seamless infinite scroll
+  const duplicatedReviews = [...reviews, ...reviews];
+
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -61,8 +69,35 @@ const CustomerReviews = () => {
     ));
   };
 
+  // Auto-scroll functionality
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer || isPaused) return;
+
+    const scrollSpeed = 1; // pixels per frame
+    let animationId;
+
+    const autoScroll = () => {
+      if (scrollContainer) {
+        scrollContainer.scrollLeft += scrollSpeed;
+
+        // Reset scroll position when reaching the middle (duplicate content)
+        if (scrollContainer.scrollLeft >= scrollContainer.scrollWidth / 2) {
+          scrollContainer.scrollLeft = 0;
+        }
+      }
+      animationId = requestAnimationFrame(autoScroll);
+    };
+
+    animationId = requestAnimationFrame(autoScroll);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [isPaused]);
+
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+    <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">What Our Users Say</h2>
@@ -71,16 +106,22 @@ const CustomerReviews = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {reviews.map((review, index) => (
+        {/* Scrolling Container */}
+        <div
+          ref={scrollRef}
+          className="flex gap-6 overflow-x-hidden cursor-grab active:cursor-grabbing scroll-smooth"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {duplicatedReviews.map((review, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="flex-shrink-0 w-[350px] bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:scale-105"
             >
               <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-primary-600 font-semibold text-lg">{review.avatar}</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center mr-4 shadow-md">
+                  <span className="text-white font-semibold text-lg">{review.avatar}</span>
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-900">{review.name}</h4>
@@ -95,30 +136,60 @@ const CustomerReviews = () => {
 
               <div className="relative">
                 <Quote className="h-8 w-8 text-primary-200 absolute -top-2 -left-2" />
-                <p className="text-gray-700 italic pl-6">"{review.review}"</p>
+                <p className="text-gray-700 italic pl-6 line-clamp-4">"{review.review}"</p>
               </div>
             </div>
+          ))}
+        </div>
+
+        {/* Scroll Indicator Dots */}
+        <div className="flex justify-center gap-2 mt-8">
+          {reviews.map((_, index) => (
+            <div
+              key={index}
+              className="w-2 h-2 rounded-full bg-primary-300 hover:bg-primary-500 transition-colors cursor-pointer"
+            />
           ))}
         </div>
 
         {/* Trust indicators */}
         <div className="mt-16 text-center">
           <div className="grid md:grid-cols-4 gap-8">
-            <div className="bg-white rounded-lg p-6 shadow-md">
-              <div className="text-3xl font-bold text-primary-600 mb-2">10,000+</div>
-              <div className="text-gray-600">Happy Users</div>
+            <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 hover:border-primary-200">
+              <div className="w-14 h-14 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <span className="text-white text-xl">👥</span>
+              </div>
+              <div className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent mb-2">
+                <AnimatedCounter value={10000} suffix="+" duration={2500} />
+              </div>
+              <div className="text-gray-600 font-medium">Happy Users</div>
             </div>
-            <div className="bg-white rounded-lg p-6 shadow-md">
-              <div className="text-3xl font-bold text-primary-600 mb-2">95%</div>
-              <div className="text-gray-600">Success Rate</div>
+            <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 hover:border-green-200">
+              <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <span className="text-white text-xl">✅</span>
+              </div>
+              <div className="text-4xl font-bold bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent mb-2">
+                <AnimatedCounter value={95} suffix="%" duration={2000} />
+              </div>
+              <div className="text-gray-600 font-medium">Success Rate</div>
             </div>
-            <div className="bg-white rounded-lg p-6 shadow-md">
-              <div className="text-3xl font-bold text-primary-600 mb-2">4.9/5</div>
-              <div className="text-gray-600">Average Rating</div>
+            <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 hover:border-yellow-200">
+              <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <span className="text-white text-xl">⭐</span>
+              </div>
+              <div className="text-4xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent mb-2">
+                4.9/5
+              </div>
+              <div className="text-gray-600 font-medium">Average Rating</div>
             </div>
-            <div className="bg-white rounded-lg p-6 shadow-md">
-              <div className="text-3xl font-bold text-primary-600 mb-2">24/7</div>
-              <div className="text-gray-600">AI Support</div>
+            <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 hover:border-purple-200">
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <span className="text-white text-xl">🤖</span>
+              </div>
+              <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent mb-2">
+                24/7
+              </div>
+              <div className="text-gray-600 font-medium">AI Support</div>
             </div>
           </div>
         </div>
