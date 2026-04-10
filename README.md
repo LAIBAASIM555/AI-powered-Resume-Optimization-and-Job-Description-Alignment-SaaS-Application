@@ -1,272 +1,390 @@
-# AI-Powered Resume Optimization and Job Description Alignment SaaS Application
+# 🤖 AI-Powered Resume Optimization and Job Description Alignment — SaaS Application
 
-A comprehensive SaaS platform that uses artificial intelligence to optimize resumes and align them with job descriptions. The application provides resume parsing, job description analysis, ATS (Applicant Tracking System) scoring, skill matching, and personalized recommendations to help job seekers improve their applications.
+> A full-stack SaaS platform that uses Machine Learning and optional AI APIs to optimize resumes, calculate ATS scores, analyze career paths, and provide personalized improvement recommendations for job seekers.
 
-## 🏗️ Project Architecture
+---
 
-### Overview
-This is a full-stack web application built with modern technologies:
+## 🎯 Key Features
+
+| Feature | Description |
+|---------|-------------|
+| 📄 Resume Upload & Parsing | Upload PDF/DOCX — auto-extracts text, skills, and structured data |
+| ✅ Strict Resume Validation | Rejects non-resume documents (invoices, images, random text) |
+| 💼 Job Description Analysis | Parses job postings and extracts required skills & keywords |
+| 📊 ATS Scoring Engine | TF-IDF + cosine similarity scoring (0–100) against job descriptions |
+| 🎯 Career Path Analysis | Matches resume against 100+ careers across multiple fields |
+| 💡 Personalized Recommendations | Prioritized, actionable tips to improve resume for each role |
+| 🤖 Optional AI Enhancement | Plug in Google Gemini or OpenAI API for smarter ATS analysis |
+| 🌗 Dark/Light Mode | Full theme toggle across the entire UI |
+| 📈 Dashboard | Track all past analyses and score history |
+
+---
+
+## 🏗️ System Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │    │     Backend     │    │   Database      │
-│   (React)       │◄──►│   (FastAPI)     │◄──►│  (PostgreSQL)   │
-│                 │    │                 │    │                 │
-│ - User Interface│    │ - API Endpoints │    │ - User Data     │
-│ - File Upload   │    │ - ML Processing │    │ - Resumes       │
-│ - Results Display│   │ - Authentication│    │ - Job Descriptions│
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+┌─────────────────────┐     HTTP/REST      ┌──────────────────────┐     SQLAlchemy    ┌───────────────────┐
+│   Frontend (React)  │ ◄─────────────── ► │  Backend  (FastAPI)  │ ◄──────────────► │ Database (Postgres)│
+│                     │                    │                      │                   │                   │
+│  • Vite + Tailwind  │                    │  • JWT Auth          │                   │  • users          │
+│  • React Router v6  │                    │  • ML Engine         │                   │  • resumes        │
+│  • Axios API Client │                    │  • Career Analyzer   │                   │  • job_descriptions│
+│  • Recharts Charts  │                    │  • AI Generator      │                   │  • analyses       │
+│  • Dark/Light Theme │                    │  • File Processing   │                   │                   │
+└─────────────────────┘                    └──────────────────────┘                   └───────────────────┘
 ```
 
-### Components
+---
 
-#### Backend (FastAPI)
-- **Framework**: FastAPI with async support
-- **Database**: PostgreSQL with SQLAlchemy ORM
-- **Authentication**: JWT tokens with Argon2 password hashing
-- **File Processing**: PDF and DOCX parsing with PyMuPDF and python-docx
-- **AI/ML**: spaCy for NLP, scikit-learn for similarity matching, TF-IDF vectorization
-- **Resume Validation**: Strict resume validation to ensure only real resumes are accepted
-- **ATS Scoring**: Comprehensive scoring engine with skills, keywords, achievements, and format analysis
-- **Optional AI**: OpenAI and Google Generative AI integration for enhanced parsing
-- **API Documentation**: Automatic OpenAPI/Swagger docs
+## 🧠 ML/AI Components
 
-#### Frontend (React)
-- **Framework**: React 18 with Vite build tool
-- **Styling**: Tailwind CSS for responsive design
-- **HTTP Client**: Axios for API communication
-- **Charts**: Recharts for data visualization
-- **Routing**: React Router for navigation
-- **Icons**: Lucide React for icons
-
-#### ML Components
 ```
 backend/app/ml/
-├── resume_parser.py      # Extract text & parse resumes from PDF/DOCX
-├── resume_validator.py   # STRICT validation - only accepts real resumes
-├── jd_parser.py          # Parse job descriptions & extract requirements
-├── scorer.py             # ATS scoring engine with TF-IDF + cosine similarity
-├── recommender.py        # Generate personalized recommendations
-└── skills_database.py    # Comprehensive skills database for matching
+├── resume_parser.py      # Extracts text from PDF/DOCX using PyMuPDF & python-docx
+├── resume_validator.py   # STRICT validation — rejects non-resume documents
+├── jd_parser.py          # Parses job descriptions, extracts required skills & keywords
+├── jd_validator.py       # Validates that submitted text is a real job description
+├── scorer.py             # ATS scoring: TF-IDF + cosine similarity (5-component score)
+├── recommender.py        # Generates prioritized, actionable recommendations
+├── skills_database.py    # 500+ skills database + find_skills_in_text()
+├── career_analyzer.py    # Matches resume to 100+ career paths across multiple fields
+├── career_database.py    # CAREER_DATABASE & CAREER_FIELDS — career data store
+└── ai_generator.py       # Optional: Gemini/OpenAI API for AI-enhanced ATS analysis
 ```
 
-#### Database Schema
+### ATS Score Breakdown
+
+| Component | Weight | What It Measures |
+|-----------|--------|-----------------|
+| Skills Match | **40%** | Resume skills vs. required job skills |
+| Keywords Match | **25%** | Industry keywords in resume vs. job description |
+| Experience Match | **20%** | Experience level and duration alignment |
+| Format & Structure | **10%** | Resume formatting quality and completeness |
+| Achievements | **5%** | Quantified results and impact statements |
+
+---
+
+## 🗄️ Database Schema
+
+### Users Table
+| Column | Type | Description |
+|--------|------|-------------|
+| id | SERIAL PK | Auto-increment ID |
+| email | VARCHAR(255) UNIQUE | Login email |
+| hashed_password | VARCHAR(255) | Argon2 hash |
+| full_name | VARCHAR(100) | Display name |
+| is_active | BOOLEAN | Account status |
+| is_verified | BOOLEAN | Email verified |
+| last_login | TIMESTAMP | Last login time |
+| created_at | TIMESTAMP | Account created |
+| updated_at | TIMESTAMP | Last updated |
+
+### Resumes Table
+| Column | Type | Description |
+|--------|------|-------------|
+| id | SERIAL PK | Auto-increment ID |
+| user_id | INTEGER FK | → users.id (CASCADE) |
+| filename | VARCHAR(255) | Original filename |
+| file_path | VARCHAR(500) | Server storage path |
+| file_type | VARCHAR(10) | `pdf` or `docx` |
+| file_size | INTEGER | Size in bytes |
+| raw_text | TEXT | Extracted plain text |
+| parsed_data | JSONB | Structured sections (name, contact, experience, education) |
+| skills | JSONB | Extracted skills array |
+| created_at | TIMESTAMP | Upload time |
+
+### Job Descriptions Table
+| Column | Type | Description |
+|--------|------|-------------|
+| id | SERIAL PK | Auto-increment ID |
+| user_id | INTEGER FK | → users.id (CASCADE) |
+| title | VARCHAR(255) | Job title |
+| company | VARCHAR(255) | Company name |
+| location | VARCHAR(255) | Job location |
+| raw_text | TEXT | Full description text |
+| parsed_data | JSONB | Structured (required_skills, preferred_skills, keywords) |
+| required_skills | JSONB | Skills array from JD |
+| keywords | JSONB | Keywords array from JD |
+| created_at | TIMESTAMP | Created time |
+
+### Analyses Table
+| Column | Type | Description |
+|--------|------|-------------|
+| id | SERIAL PK | Auto-increment ID |
+| user_id | INTEGER FK | → users.id |
+| resume_id | INTEGER FK | → resumes.id |
+| job_id | INTEGER FK | → job_descriptions.id |
+| ats_score | FLOAT | Overall score 0–100 |
+| score_breakdown | JSONB | Per-component scores |
+| matched_skills | JSONB | Skills in both resume & job |
+| missing_skills | JSONB | Skills required but missing |
+| extra_skills | JSONB | Resume skills not in JD |
+| matched_keywords | JSONB | Keywords matched |
+| missing_keywords | JSONB | Keywords missing |
+| recommendations | JSONB | Prioritized recommendations |
+| original_summary | TEXT | Resume summary as parsed |
+| improved_summary | TEXT | AI-improved summary (optional) |
+| created_at | TIMESTAMP | Analysis timestamp |
+
+---
+
+## 📁 Full Project Structure
+
 ```
-users
-├── id (Primary Key)
-├── email (Unique)
-├── hashed_password (Argon2)
-├── full_name
-├── is_active
-├── is_verified
-└── last_login
-
-resumes
-├── id (Primary Key)
-├── user_id (Foreign Key)
-├── filename
-├── file_content
-├── parsed_text
-├── skills_extracted
-└── upload_date
-
-job_descriptions
-├── id (Primary Key)
-├── user_id (Foreign Key)
-├── title
-├── company
-├── description
-├── requirements
-├── skills_required
-└── created_date
-
-analyses
-├── id (Primary Key)
-├── user_id (Foreign Key)
-├── resume_id (Foreign Key)
-├── job_id (Foreign Key)
-├── ats_score
-├── score_breakdown
-├── matching_skills
-├── missing_skills
-├── recommendations
-└── created_date
+Resume-Optimization/
+├── README.md
+├── docker-compose.yml           # Orchestrates db + backend + frontend containers
+├── test_ml_system.py            # Standalone ML system test script
+├── .gitignore
+│
+├── Docs/                        # Project documentation
+│   ├── API.md                   # Full API reference with request/response examples
+│   ├── ARCHITECTURE.md          # System architecture & component details
+│   ├── DATABASE.md              # Database schema & SQL definitions
+│   ├── SETUP.md                 # Setup guide (Docker & local)
+│   ├── TERMINAL.md              # Quick terminal commands reference
+│   └── TESTING.md               # Testing guide & manual test scenarios
+│
+├── backend/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── .env                     # Environment variables (not committed)
+│   ├── .env.example             # Template for .env
+│   ├── init.sql                 # Database initialization SQL
+│   │
+│   └── app/
+│       ├── main.py              # FastAPI app entry point
+│       ├── config.py            # Settings via pydantic-settings
+│       │
+│       ├── api/
+│       │   ├── deps.py          # Auth + DB dependency injection
+│       │   └── v1/
+│       │       ├── router.py    # Aggregates all API routes
+│       │       ├── auth.py      # /auth/register, /auth/login, /auth/login/json
+│       │       ├── users.py     # /users/me, /users/me/stats
+│       │       ├── resume.py    # /resume/upload, /resume/{id}
+│       │       ├── job.py       # /job/ (CRUD)
+│       │       ├── analysis.py  # /analysis/analyze, /analysis/{id}
+│       │       ├── dashboard.py # /dashboard/stats
+│       │       └── career.py    # /career/analyze, /career/fields, /career/careers
+│       │
+│       ├── core/
+│       │   └── security.py      # JWT creation/validation, Argon2 hashing
+│       │
+│       ├── db/
+│       │   ├── base.py          # SQLAlchemy Base + TimestampMixin
+│       │   └── database.py      # Engine + get_db() session factory
+│       │
+│       ├── models/              # SQLAlchemy ORM models
+│       │   ├── user.py
+│       │   ├── resume.py
+│       │   ├── job.py
+│       │   └── analysis.py
+│       │
+│       ├── schemas/             # Pydantic request/response schemas
+│       │   ├── user.py
+│       │   ├── token.py
+│       │   ├── resume.py
+│       │   ├── job.py
+│       │   ├── analysis.py
+│       │   ├── dashboard.py
+│       │   └── career.py
+│       │
+│       ├── ml/                  # Machine Learning & AI components
+│       │   ├── resume_parser.py
+│       │   ├── resume_validator.py
+│       │   ├── jd_parser.py
+│       │   ├── jd_validator.py
+│       │   ├── scorer.py
+│       │   ├── recommender.py
+│       │   ├── skills_database.py
+│       │   ├── career_analyzer.py
+│       │   ├── career_database.py
+│       │   └── ai_generator.py
+│       │
+│       └── utils/
+│           └── file_handler.py
+│
+└── frontend/
+    ├── Dockerfile
+    ├── package.json
+    ├── vite.config.js
+    ├── tailwind.config.js
+    ├── index.html
+    │
+    └── src/
+        ├── App.jsx              # Root component + routing
+        ├── index.jsx            # React entry point
+        ├── index.css            # Global styles + Tailwind
+        │
+        ├── pages/
+        │   ├── HomePage.jsx
+        │   ├── LoginPage.jsx
+        │   ├── SignupPage.jsx
+        │   ├── UploadPage.jsx
+        │   ├── ResultsPage.jsx
+        │   ├── DashboardPage.jsx
+        │   └── CareerAnalysisPage.jsx
+        │
+        ├── components/
+        │   ├── common/          # Navbar, Footer, Button, Card, Input, etc.
+        │   ├── upload/          # Upload-specific sub-components
+        │   └── results/         # Results display sub-components
+        │
+        ├── context/
+        │   ├── AuthContext.jsx  # Authentication state (login/logout)
+        │   └── ThemeContext.jsx # Dark/Light mode
+        │
+        └── services/
+            └── api.jsx          # Axios instance + all API method calls
 ```
+
+---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-
-#### For All Platforms
-- **Docker & Docker Compose**: Latest versions
-- **Git**: For cloning the repository
-
-#### For Local Development (Windows/Linux)
-- **Python**: 3.11 or higher
-- **Node.js**: 18.x or higher
-- **PostgreSQL**: 15.x or higher (if not using Docker)
-
-### Option 1: Docker Deployment (Recommended)
-
-#### Windows/Linux Setup
+### Option 1: Docker (Recommended)
 ```bash
-# Clone the repository
 git clone https://github.com/LAIBAASIM555/AI-powered-Resume-Optimization-and-Job-Description-Alignment-SaaS-Application.git
 cd AI-powered-Resume-Optimization-and-Job-Description-Alignment-SaaS-Application
-
-# Start the application
-docker-compose up --build
-
-# Access the application
-# Frontend: http://localhost
-# Backend API: http://localhost:8000
-# API Docs: http://localhost:8000/docs
+docker-compose up -d --build
 ```
+- **Frontend**: http://localhost
+- **Backend API**: http://localhost:8000
+- **Swagger UI**: http://localhost:8000/docs
 
-### Option 2: Local Development Setup
-
-#### Backend Setup
-```bash
+### Option 2: Local Development (Windows)
+```powershell
+# Backend
 cd backend
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+venv\Scripts\activate
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
 
-#### Frontend Setup
-```bash
+# Frontend (new terminal)
 cd frontend
 npm install
 npm run dev
 ```
-
-#### Access Points
-- **Frontend (Dev)**: http://localhost:5173
+- **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
 
-## 📦 Dependencies
+---
 
-### Backend Dependencies
-```
-# Core
-fastapi==0.110.0
-uvicorn[standard]==0.27.1
-pydantic==2.6.1
+## 🤖 AI API Key Support (Optional)
 
-# Database
-sqlalchemy==2.0.25
-psycopg2-binary==2.9.9
-alembic==1.13.1
+The system works **fully out-of-the-box** using local ML (spaCy + scikit-learn). However, for **AI-enhanced, smarter ATS scoring**, you can add an API key from either:
 
-# Authentication
-python-jose[cryptography]==3.3.0
-passlib[argon2,bcrypt]==1.7.4
-
-# File Processing
-pymupdf==1.23.26
-python-docx==1.1.0
-
-# AI/NLP
-spacy==3.7.4
-scikit-learn==1.4.0
-numpy==1.26.4
-
-# Optional AI APIs
-openai>=1.0.0
-google-generativeai>=0.3.0
+### Option A: Google Gemini (Recommended)
+1. Get a free key at: https://aistudio.google.com/
+2. Add to `backend/.env`:
+```env
+GOOGLE_API_KEY=your-google-api-key-here
+AI_SERVICE_PREFERRED=gemini
+USE_AI_PARSING=True
 ```
 
-### Frontend Dependencies
-```json
-{
-  "dependencies": {
-    "axios": "^1.6.2",
-    "lucide-react": "^0.294.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
-    "recharts": "^2.10.3"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.1",
-    "tailwindcss": "^3.3.6",
-    "vite": "^5.0.8"
-  }
-}
+### Option B: OpenAI (ChatGPT/GPT-4)
+1. Get a key at: https://platform.openai.com/
+2. Add to `backend/.env`:
+```env
+OPENAI_API_KEY=your-openai-api-key-here
+AI_SERVICE_PREFERRED=openai
+USE_AI_PARSING=True
 ```
 
-## 🐳 Docker Configuration
+### What AI Enhancement Does
+| Without AI | With AI |
+|-----------|---------|
+| TF-IDF + cosine similarity scoring | Gemini/GPT-4 understands context and nuance |
+| Keyword-based skill matching | Recognizes skill synonyms and related experience |
+| Rule-based recommendations | AI-generated, personalized improvement advice |
+| Local, fast, always works | Better accuracy, requires internet + API key |
 
-### Services
-- **db**: PostgreSQL 15 Alpine
-- **backend**: Python FastAPI application
-- **frontend**: React application served by Nginx
+> **Note**: If the API key is missing or the API call fails, the system **automatically falls back** to the local ML engine — no errors, no downtime.
 
-### Volumes
-- `postgres_data`: Persistent database storage
-- `backend_uploads`: File upload storage
-
-### Environment Variables
-- `DATABASE_URL`: PostgreSQL connection string
-- `SECRET_KEY`: JWT signing key
-- `DEBUG`: Debug mode flag
-- `ALLOWED_ORIGINS`: CORS allowed origins
-
-## 📚 API Documentation
-
-Once running, visit:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
-### Key Endpoints
-- `POST /api/v1/auth/register`: User registration
-- `POST /api/v1/auth/login/json`: User login (JSON)
-- `POST /api/v1/resume/upload`: Upload resume (multipart/form-data)
-- `POST /api/v1/job/`: Create job description
-- `POST /api/v1/analysis/analyze`: Run analysis
-- `GET /api/v1/dashboard/stats`: Get dashboard statistics
+---
 
 ## 🔐 Security Features
 
 - **Password Hashing**: Argon2 algorithm (industry standard)
-- **JWT Authentication**: Secure token-based auth (HS256)
-- **CORS Protection**: Configured allowed origins
-- **Input Validation**: Pydantic schemas
-- **File Validation**: Only PDF/DOCX accepted (max 5MB)
-- **Resume Validation**: Strict validation ensures only real resumes are processed
-- **SQL Injection Protection**: SQLAlchemy ORM
-
-## 🎯 Key Features
-
-1. **Resume Upload & Parsing**: Upload PDF/DOCX resumes with automatic text extraction
-2. **Strict Resume Validation**: Only accepts genuine resumes, rejects random documents
-3. **Job Description Analysis**: Parse job postings and extract requirements
-4. **ATS Scoring**: Comprehensive scoring based on:
-   - Skills match (40% weight)
-   - Keywords match (25% weight)
-   - Experience match (20% weight)
-   - Format & structure (10% weight)
-   - Achievements (5% weight)
-5. **Recommendations**: Personalized suggestions to improve resume
-6. **Dashboard**: Track analysis history and improvement over time
-
-## 🆘 Troubleshooting
-
-### Common Issues
-
-- **Docker Issues**: Run `docker system prune` to clear cache
-- **Port in use**: Change ports in docker-compose.yml
-- **Database connection fails**: Check DATABASE_URL
-- **spaCy model not found**: Run `python -m spacy download en_core_web_sm`
-- **Resume rejected**: Ensure the document is a real resume with contact info and work experience
-
-## 📄 License
-
-This project is licensed under the MIT License.
+- **JWT Authentication**: HS256 tokens, 24-hour expiry
+- **CORS Protection**: Configurable allowed origins
+- **Input Validation**: Pydantic schemas on all endpoints
+- **File Validation**: Only PDF/DOCX, max 5MB enforced
+- **Resume Validation**: Strict content validation — rejects non-resume documents
+- **SQL Injection Protection**: SQLAlchemy ORM (no raw SQL)
 
 ---
 
-**Note**: For API access, use `http://localhost:8000` instead of `http://0.0.0.0:8000`.
+## 📡 API Endpoints Overview
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/v1/auth/register` | No | Register new user |
+| POST | `/api/v1/auth/login/json` | No | Login (JSON body) |
+| GET | `/api/v1/users/me` | Yes | Get current user profile |
+| POST | `/api/v1/resume/upload` | Yes | Upload PDF/DOCX resume |
+| GET | `/api/v1/resume/` | Yes | Get all user resumes |
+| POST | `/api/v1/job/` | Yes | Create job description |
+| POST | `/api/v1/analysis/analyze` | Yes | Run ATS analysis |
+| GET | `/api/v1/analysis/` | Yes | Get analysis history |
+| GET | `/api/v1/dashboard/stats` | Yes | Dashboard statistics |
+| POST | `/api/v1/career/analyze` | Yes | Career path analysis |
+| GET | `/api/v1/career/fields` | No | List career fields |
+| GET | `/health` | No | Health check |
+
+> Full API documentation: [Docs/API.md](Docs/API.md)
+
+---
+
+## 🛠️ Tech Stack Summary
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, Vite 5, Tailwind CSS 3, React Router v6 |
+| Backend | Python 3.11+, FastAPI 0.110, Uvicorn |
+| Database | PostgreSQL 15, SQLAlchemy 2.0, Alembic |
+| Auth | JWT (python-jose), Argon2 (passlib) |
+| ML/NLP | spaCy 3.7, scikit-learn 1.4, NumPy |
+| File Processing | PyMuPDF, python-docx |
+| Optional AI | Google Gemini API, OpenAI API |
+| DevOps | Docker, Docker Compose, Nginx |
+
+---
+
+## 🆘 Troubleshooting
+
+| Problem | Solution |
+|---------|---------| 
+| Docker not starting | `docker system prune -a` then `docker-compose up --build` |
+| Port 8000/5432 in use | Change ports in `docker-compose.yml` |
+| Database connection fails | Check `DATABASE_URL` in `.env` |
+| spaCy model missing | `python -m spacy download en_core_web_sm` |
+| Resume rejected | Must be a real resume with contact info + work experience |
+| API key not working | Check `.env` — set `AI_SERVICE_PREFERRED` to `gemini` or `openai` |
+
+---
+
+## 📖 Documentation
+
+| File | Description |
+|------|-------------|
+| [Docs/API.md](Docs/API.md) | Complete API reference |
+| [Docs/ARCHITECTURE.md](Docs/ARCHITECTURE.md) | System architecture details |
+| [Docs/DATABASE.md](Docs/DATABASE.md) | Database schema & SQL |
+| [Docs/SETUP.md](Docs/SETUP.md) | Step-by-step setup guide |
+| [Docs/TERMINAL.md](Docs/TERMINAL.md) | Terminal commands cheat sheet |
+| [Docs/TESTING.md](Docs/TESTING.md) | Testing guide |
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+*Built with ❤️ using FastAPI, React, PostgreSQL, and Machine Learning*
