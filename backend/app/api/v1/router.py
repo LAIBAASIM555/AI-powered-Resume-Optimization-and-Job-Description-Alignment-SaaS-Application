@@ -7,7 +7,7 @@ from fastapi import APIRouter
 api_router = APIRouter()
 
 # Import and include all route modules
-from app.api.v1 import auth, users, resume, job, analysis, dashboard
+from app.api.v1 import auth, users, resume, job, analysis, dashboard, career
 
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(users.router, prefix="/users", tags=["Users"])
@@ -15,6 +15,7 @@ api_router.include_router(resume.router, prefix="/resume", tags=["Resume"])
 api_router.include_router(job.router, prefix="/job", tags=["Job Description"])
 api_router.include_router(analysis.router, prefix="/analysis", tags=["Analysis"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
+api_router.include_router(career.router, tags=["Career Analysis"])
 
 # Temporary root endpoint for testing
 @api_router.get("/")

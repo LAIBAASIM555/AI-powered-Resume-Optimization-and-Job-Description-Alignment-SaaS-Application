@@ -1,72 +1,81 @@
 # 🚀 Setup Guide
 
-This guide explains how to set up the AI Resume Optimizer project on Windows and Linux.
-
-## 📋 Prerequisites
-
-### Required Software
-- **Git**: For cloning the repository
-- **Docker Desktop**: Recommended for easy setup
-- **Python 3.11+**: For local development
-- **Node.js 18+**: For frontend development
-- **PostgreSQL 15+**: If not using Docker
+This guide explains how to set up the AI Resume Optimizer project on Windows. Two options are available: Docker (recommended for simplicity) or Local Development (recommended for active development).
 
 ---
 
-## 💻 Docker Setup (Recommended)
+## 📋 Prerequisites
 
-### Step 1: Install Docker
-```bash
-# Windows: Download from https://www.docker.com/products/docker-desktop
-# Linux:
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
+| Tool | Version | Purpose |
+|------|---------|---------|
+| Git | Any | Clone/manage repository |
+| Docker Desktop | Latest | Run services in containers |
+| Python | 3.11+ | Backend development |
+| Node.js | 18+ | Frontend development |
+| PostgreSQL | 15+ | Database (skip if using Docker) |
+
+---
+
+## 💻 Option 1: Docker Setup (Recommended)
+
+### Step 1: Install Docker Desktop
+Download from: https://www.docker.com/products/docker-desktop
+
+**Verify:**
+```powershell
+docker --version
+docker-compose --version
 ```
 
-### Step 2: Clone Project
-```bash
+### Step 2: Clone the Repository
+```powershell
 git clone https://github.com/LAIBAASIM555/AI-powered-Resume-Optimization-and-Job-Description-Alignment-SaaS-Application.git
 cd AI-powered-Resume-Optimization-and-Job-Description-Alignment-SaaS-Application
 ```
 
-### Step 3: Start Application
-```bash
-docker-compose up --build
-
-# Or run in background
+### Step 3: Start All Services
+```powershell
+# Build and start (first time or after changes)
 docker-compose up -d --build
+
+# Or just start (if already built)
+docker-compose up -d
 ```
 
-### Step 4: Access Application
-- **Frontend**: http://localhost
-- **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
+### Step 4: Access the Application
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost |
+| Backend API | http://localhost:8000 |
+| Swagger UI | http://localhost:8000/docs |
+| ReDoc | http://localhost:8000/redoc |
 
 ### Stop Application
-```bash
+```powershell
 docker-compose down
 ```
 
 ---
 
-## 💻 Local Development Setup
+## 💻 Option 2: Local Development Setup (Windows)
 
-### Windows Setup
+### Step 1: Install Python 3.11+
+Download from: https://python.org
 
-#### Step 1: Install Python
 ```powershell
-# Download Python 3.11+ from https://python.org
 python --version
 ```
 
-#### Step 2: Install Node.js
+### Step 2: Install Node.js 18+
+Download from: https://nodejs.org
+
 ```powershell
-# Download Node.js 18+ from https://nodejs.org
 node --version
+npm --version
 ```
 
-#### Step 3: Backend Setup
+### Step 3: Backend Setup
+
 ```powershell
 cd backend
 python -m venv venv
@@ -75,153 +84,209 @@ pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 ```
 
-#### Step 4: Frontend Setup
+### Step 4: Frontend Setup
+
 ```powershell
 cd ..\frontend
 npm install
 ```
 
-#### Step 5: Start Database (Docker)
+### Step 5: Start the Database
+
+If you don't have PostgreSQL installed locally, use Docker just for the database:
+
 ```powershell
-docker run -d --name postgres -p 5432:5432 -e POSTGRES_DB=resume_optimizer -e POSTGRES_PASSWORD=password123 postgres:15-alpine
+docker run -d `
+  --name resume_db `
+  -p 5432:5432 `
+  -e POSTGRES_DB=resume_optimizer `
+  -e POSTGRES_USER=postgres `
+  -e POSTGRES_PASSWORD=password123 `
+  postgres:15-alpine
 ```
 
-#### Step 6: Start Services
+### Step 6: Configure Environment
+
+The `backend/.env` file should already exist. If not, copy from `.env.example`:
+
 ```powershell
-# Terminal 1: Backend
+copy backend\.env.example backend\.env
+```
+
+For local development, update `DATABASE_URL` to use `localhost` instead of `db`:
+```env
+DATABASE_URL=postgresql://postgres:password123@localhost:5432/resume_optimizer
+```
+
+### Step 7: Start Both Servers
+
+**Terminal 1 — Backend:**
+```powershell
 cd backend
 venv\Scripts\activate
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-# Terminal 2: Frontend
+**Terminal 2 — Frontend:**
+```powershell
 cd frontend
 npm run dev
 ```
 
-### Linux Setup
-
-#### Step 1: Install Python
-```bash
-sudo apt update
-sudo apt install python3.11 python3.11-venv python3-pip
-```
-
-#### Step 2: Install Node.js
-```bash
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-
-#### Step 3: Backend Setup
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python -m spacy download en_core_web_sm
-```
-
-#### Step 4: Frontend Setup
-```bash
-cd ../frontend
-npm install
-```
-
-#### Step 5: Start Services
-```bash
-# Terminal 1: Backend
-cd backend && source venv/bin/activate
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# Terminal 2: Frontend
-cd frontend && npm run dev
-```
-
-### Access Points
-- **Frontend (Dev)**: http://localhost:5173
-- **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
+### Access Points (Local Dev)
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:5173 |
+| Backend API | http://localhost:8000 |
+| Swagger UI | http://localhost:8000/docs |
 
 ---
 
 ## 🔧 Environment Configuration
 
-Create `.env` file in backend directory:
+The `backend/.env` file controls all backend settings:
 
 ```env
 # Database
 DATABASE_URL=postgresql://postgres:password123@localhost:5432/resume_optimizer
 
 # Security
-SECRET_KEY=your-super-secret-key-change-in-production
+SECRET_KEY=your-super-secret-key-change-this-in-production-minimum-32-characters
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
 
 # Application
 DEBUG=True
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
-UPLOAD_DIR=uploads
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost:80
+
+# File Upload
+UPLOAD_DIR=uploads/resumes
 MAX_FILE_SIZE=5242880
+ALLOWED_EXTENSIONS=pdf,docx
 
 # Optional: AI APIs for enhanced parsing
-OPENAI_API_KEY=your-openai-key
-GOOGLE_API_KEY=your-google-key
+# Leave empty to use local spaCy-based parsing (default)
+OPENAI_API_KEY=
+GOOGLE_API_KEY=
+AI_SERVICE_PREFERRED=local
+USE_AI_PARSING=False
+ENABLE_OCR=False
 ```
+
+> **⚠️ Important**: Never commit the actual `.env` file to version control. The `.env.example` file is committed as a template.
 
 ---
 
 ## 🐛 Troubleshooting
 
 ### Docker Issues
-```bash
-# Permission error
-sudo usermod -aG docker $USER
-# Logout and login
 
-# Port in use
+```powershell
+# Port already in use
 docker-compose down
 docker-compose up -d
 
 # Build cache issues
 docker system prune -a
+docker-compose up -d --build
 ```
 
 ### Python Issues
-```bash
-# Virtual environment
-# Windows: venv\Scripts\activate
-# Linux: source venv/bin/activate
 
-# Reinstall dependencies
+```powershell
+# Virtual environment not activated
+venv\Scripts\activate
+
+# Missing dependencies
 pip install -r requirements.txt --force-reinstall
+
+# spaCy model missing
+python -m spacy download en_core_web_sm
 ```
 
 ### Database Issues
-```bash
-# Check PostgreSQL status
-docker ps | grep postgres
 
-# Connect to database
-docker exec -it postgres psql -U postgres -d resume_optimizer
+```powershell
+# Check if database container is running
+docker ps | findstr postgres
+
+# Connect directly to database
+docker exec -it resume_db psql -U postgres -d resume_optimizer
+
+# Test connection
+curl http://localhost:8000/health
 ```
+
+### Resume Rejected
+
+The resume validator (`resume_validator.py`) strictly checks for:
+- Contact information (email or phone)
+- Work experience section
+- Education section
+- Professional language and structure
+
+**Solution**: Ensure you are uploading a real resume, not a random document.
 
 ---
 
 ## 🎯 Quick Verification
 
-After setup, verify everything works:
+After setup, verify the system is working:
 
-```bash
-# Check services
-docker ps
-
-# Test API
+```powershell
+# Check backend health
 curl http://localhost:8000/health
 
-# Test frontend
-curl http://localhost
+# Check API docs accessible
+start http://localhost:8000/docs
+```
+
+Expected response from `/health`:
+```json
+{
+    "status": "healthy",
+    "database": "PostgreSQL connected"
+}
 ```
 
 ---
 
-**Note**: Docker setup is recommended as it handles all dependencies automatically.
+## 📦 Key Dependencies
+
+### Backend (`requirements.txt`)
+```
+fastapi==0.110.0
+uvicorn[standard]==0.27.1
+sqlalchemy==2.0.25
+psycopg2-binary==2.9.9
+alembic==1.13.1
+python-jose[cryptography]==3.3.0
+passlib[argon2,bcrypt]==1.7.4
+pydantic==2.6.1
+pydantic-settings==2.1.0
+pymupdf==1.23.26
+python-docx==1.1.0
+spacy==3.7.4
+scikit-learn==1.4.0
+numpy==1.26.4
+openai>=1.0.0
+google-generativeai>=0.3.0
+```
+
+### Frontend (`package.json`)
+```json
+{
+  "react": "^18.2.0",
+  "react-dom": "^18.2.0",
+  "react-router-dom": "^6.20.0",
+  "axios": "^1.6.2",
+  "lucide-react": "^0.294.0",
+  "recharts": "^2.10.3",
+  "tailwindcss": "^3.3.6",
+  "vite": "^5.0.8"
+}
+```
+
+---
+
+**Note**: Docker setup is strongly recommended for first-time setup as it handles all dependencies, database creation, and service connectivity automatically.

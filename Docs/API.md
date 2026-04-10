@@ -10,6 +10,10 @@ Complete API reference for the AI Resume Optimizer application.
 
 **Content-Type:** `application/json` (unless uploading files)
 
+**Interactive Docs:**
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
 ---
 
 ## Authentication Flow
@@ -20,15 +24,15 @@ sequenceDiagram
     participant Frontend
     participant Backend
     participant Database
-    
+
     User->>Frontend: Enter credentials
     Frontend->>Backend: POST /auth/login/json
-    Backend->>Database: Verify user
-    Database-->>Backend: User data
-    Backend->>Backend: Generate JWT
+    Backend->>Database: Verify user + password (Argon2)
+    Database-->>Backend: User record
+    Backend->>Backend: Generate JWT (HS256, 24h)
     Backend-->>Frontend: {access_token, token_type}
     Frontend->>Frontend: Store in localStorage
-    Frontend-->>User: Redirect to dashboard
+    Frontend-->>User: Redirect to /upload
 ```
 
 ---
@@ -67,7 +71,7 @@ POST /api/v1/auth/register
 
 ---
 
-### Login (JSON)
+### Login (JSON) — Used by Frontend
 ```
 POST /api/v1/auth/login/json
 ```
@@ -89,11 +93,12 @@ POST /api/v1/auth/login/json
 ```
 
 **Errors:**
-- `401` - Invalid credentials
+- `401` - Incorrect email or password
+- `400` - Account is inactive
 
 ---
 
-### Login (Form Data)
+### Login (Form Data) — OAuth2 Compatible
 ```
 POST /api/v1/auth/login
 Content-Type: application/x-www-form-urlencoded
@@ -104,14 +109,17 @@ Content-Type: application/x-www-form-urlencoded
 username=user@example.com&password=SecurePassword123
 ```
 
+**Response (200):** Same as Login (JSON)
+
 ---
 
 ## 👤 User Endpoints
 
+All user endpoints require: `Authorization: Bearer <token>`
+
 ### Get Current User
 ```
 GET /api/v1/users/me
-Authorization: Bearer <token>
 ```
 
 **Response (200):**
@@ -132,7 +140,6 @@ Authorization: Bearer <token>
 ### Update User
 ```
 PUT /api/v1/users/me
-Authorization: Bearer <token>
 ```
 
 **Request Body:**
@@ -147,7 +154,6 @@ Authorization: Bearer <token>
 ### Get User Statistics
 ```
 GET /api/v1/users/me/stats
-Authorization: Bearer <token>
 ```
 
 **Response (200):**
@@ -188,9 +194,9 @@ Content-Type: multipart/form-data
 ```
 
 **Errors:**
-- `400` - Invalid file type (only PDF/DOCX)
-- `400` - File too large (>5MB)
-- `400` - Not a valid resume (rejected by validator)
+- `400` - Invalid file type (only PDF/DOCX accepted)
+- `400` - File too large (max 5MB)
+- `400` - Not a valid resume (rejected by resume_validator.py — must have contact info, work experience)
 - `422` - File processing error
 
 ---
@@ -228,6 +234,8 @@ Authorization: Bearer <token>
 DELETE /api/v1/resume/{id}
 Authorization: Bearer <token>
 ```
+
+**Response:** `204 No Content`
 
 ---
 
@@ -286,11 +294,13 @@ DELETE /api/v1/job/{id}
 Authorization: Bearer <token>
 ```
 
+**Response:** `204 No Content`
+
 ---
 
 ## 📊 Analysis Endpoints
 
-### Run Analysis
+### Run ATS Analysis
 ```
 POST /api/v1/analysis/analyze
 Authorization: Bearer <token>
@@ -304,7 +314,7 @@ Authorization: Bearer <token>
 }
 ```
 
-**Response (200):**
+**Response (201):**
 ```json
 {
     "id": 1,
@@ -326,10 +336,12 @@ Authorization: Bearer <token>
             "priority": "high",
             "category": "skills",
             "message": "Add Docker experience",
-            "details": "Docker is listed as required skill"
+            "details": "Docker is listed as a required skill"
         }
     ],
-    "created_date": "2026-01-01T12:00:00"
+    "original_summary": "Experienced developer with 5 years...",
+    "improved_summary": null,
+    "created_at": "2026-01-01T12:00:00"
 }
 ```
 
@@ -337,8 +349,21 @@ Authorization: Bearer <token>
 
 ### Get Analysis History
 ```
-GET /api/v1/analysis/
+GET /api/v1/analysis/?limit=10
 Authorization: Bearer <token>
+```
+
+**Response (200):**
+```json
+[
+    {
+        "id": 1,
+        "resume_filename": "my_resume.pdf",
+        "job_title": "Senior Software Engineer",
+        "ats_score": 82.5,
+        "created_at": "2026-01-01T12:00:00"
+    }
+]
 ```
 
 ---
@@ -356,6 +381,8 @@ Authorization: Bearer <token>
 DELETE /api/v1/analysis/{id}
 Authorization: Bearer <token>
 ```
+
+**Response:** `204 No Content`
 
 ---
 
@@ -387,6 +414,89 @@ Authorization: Bearer <token>
 
 ---
 
+## 🎯 Career Analysis Endpoints
+
+### Analyze Career Fit
+```
+POST /api/v1/career/analyze
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+    "resume_id": 1
+}
+```
+
+**Response (200):**
+```json
+{
+    "best_fit": {
+        "career_title": "Backend Developer",
+        "match_percentage": 91.5,
+        "field": "Software Engineering",
+        "alternate_titles": ["API Developer", "Server-side Engineer"],
+        "matched_skills": ["Python", "FastAPI", "PostgreSQL"],
+        "missing_skills": ["Go", "gRPC"],
+        "experience_level": "Mid-Senior",
+        "salary_range": "$80,000 - $130,000",
+        "market_demand": "Very High",
+        "growth_rate": "25%",
+        "description": "Develops server-side logic and APIs",
+        "match_category": "Excellent Match",
+        "recommendations": ["Add system design experience", "Learn containerization"]
+    },
+    "eligible_careers": [...],
+    "eligible_fields": [
+        {
+            "field": "Software Engineering",
+            "description": "...",
+            "matching_careers": ["Backend Developer", "Full Stack Developer"],
+            "total_careers_in_field": 8
+        }
+    ],
+    "future_careers": [...],
+    "skills_summary": {},
+    "market_insights": {},
+    "overall_profile": {}
+}
+```
+
+**Errors:**
+- `404` - Resume not found
+- `400` - Resume has no extracted text (re-upload required)
+
+---
+
+### Get All Career Fields
+```
+GET /api/v1/career/fields
+```
+
+**Response (200):** List of all career field names
+
+---
+
+### Get All Career Titles
+```
+GET /api/v1/career/careers
+```
+
+**Response (200):**
+```json
+[
+    {
+        "title": "Backend Developer",
+        "field": "Software Engineering",
+        "market_demand": "Very High",
+        "required_skills_count": 8
+    }
+]
+```
+
+---
+
 ## 🔧 System Endpoints
 
 ### Health Check
@@ -412,7 +522,7 @@ GET /
 **Response (200):**
 ```json
 {
-    "app": "Resume Optimizer API",
+    "app": "AI Resume Optimizer",
     "version": "1.0.0",
     "status": "running",
     "database": "PostgreSQL",
@@ -431,9 +541,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 **Token Details:**
-- Algorithm: HS256
-- Expiry: 24 hours (1440 minutes)
-- Stored in: localStorage (frontend)
+- Algorithm: `HS256`
+- Expiry: `24 hours (1440 minutes)`
+- Stored in: `localStorage` on the frontend
 
 ---
 
@@ -451,11 +561,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 |------|---------|
 | 200 | Success |
 | 201 | Created |
+| 204 | No Content (Delete success) |
 | 400 | Bad Request |
 | 401 | Unauthorized |
 | 403 | Forbidden |
 | 404 | Not Found |
-| 422 | Validation Error |
+| 422 | Validation Error (Pydantic) |
 | 500 | Server Error |
 
 ---
@@ -480,7 +591,7 @@ curl -X POST http://localhost:8000/api/v1/auth/login/json \
 ```bash
 curl -X POST http://localhost:8000/api/v1/resume/upload \
   -H "Authorization: Bearer YOUR_TOKEN" \
-  -F "file=@resume.pdf"
+  -F "file=@/path/to/resume.pdf"
 ```
 
 ### Run Analysis
@@ -491,12 +602,13 @@ curl -X POST http://localhost:8000/api/v1/analysis/analyze \
   -d '{"resume_id":1,"job_id":1}'
 ```
 
----
-
-## 📚 Interactive Documentation
-
-- **Swagger UI:** http://localhost:8000/docs
-- **ReDoc:** http://localhost:8000/redoc
+### Analyze Career
+```bash
+curl -X POST http://localhost:8000/api/v1/career/analyze \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"resume_id":1}'
+```
 
 ---
 
@@ -511,12 +623,13 @@ flowchart TD
     D --> E{Valid Resume?}
     E -->|No| F[Error: Not a valid resume]
     E -->|Yes| G[Create Job Description]
-    G --> H[Run Analysis]
-    H --> I[View Results]
-    I --> J[Dashboard]
-    J --> D
+    G --> H[Run ATS Analysis]
+    H --> I[View Results Page]
+    I --> J[Dashboard History]
+    D --> K[Run Career Analysis]
+    K --> L[View Career Recommendations]
 ```
 
 ---
 
-**Note:** All API endpoints are versioned under `/api/v1/`. Future updates will use `/api/v2/` for breaking changes.
+**Note:** All protected endpoints return `401 Unauthorized` if the token is missing or invalid. The frontend automatically redirects to `/login` on `401` responses.
